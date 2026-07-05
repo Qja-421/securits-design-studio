@@ -64,6 +64,7 @@ interface OnboardingTourProps {
 export const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete }) => {
   const [step, setStep] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
+  const [founderImageFailed, setFounderImageFailed] = useState(false);
 
   const currentStep = TOUR_STEPS[step];
   const isFirst = step === 0;
@@ -95,13 +96,21 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete }) =>
       className={`fixed inset-0 z-[999] flex items-center justify-center transition-all duration-300 ${
         isExiting ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
       }`}
-      style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}
+        style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}
     >
-      <div className="relative bg-gradient-to-br from-[#141821] to-[#0d1017] border border-white/15 rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+      <div className={`relative border rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden ${
+        isFirst
+          ? 'bg-gradient-to-br from-[#1A1F2E] to-[#0F1419] border-[#C8860A]/45'
+          : 'bg-gradient-to-br from-[#141821] to-[#0d1017] border-white/15'
+      }`}>
         {/* Progress bar */}
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-white/10">
           <div
-            className="h-full bg-gradient-to-r from-brand-blue to-brand-orange transition-all duration-500"
+            className={`h-full transition-all duration-500 ${
+              isFirst
+                ? 'bg-gradient-to-r from-[#C8860A] to-brand-orange'
+                : 'bg-gradient-to-r from-brand-blue to-brand-orange'
+            }`}
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -126,7 +135,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete }) =>
                   onClick={() => setStep(i)}
                   className={`rounded-full transition-all duration-300 ${
                     i === step
-                      ? 'w-6 h-1.5 bg-brand-orange'
+                      ? `w-6 h-1.5 ${isFirst ? 'bg-[#C8860A]' : 'bg-brand-orange'}`
                       : i < step
                         ? 'w-1.5 h-1.5 bg-brand-blue'
                         : 'w-1.5 h-1.5 bg-white/20'
@@ -154,6 +163,42 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ onComplete }) =>
           <p className="text-sm text-gray-300 leading-relaxed">
             {currentStep.body}
           </p>
+
+          {isFirst && (
+            <div className="mt-6 flex items-center gap-4 rounded-xl border border-[#C8860A]/35 bg-black/20 p-4 shadow-[0_18px_45px_rgba(0,0,0,0.22)]">
+              <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-full border border-[#C8860A] bg-[#0F1419] shadow-[0_10px_28px_rgba(200,134,10,0.22)]">
+                {founderImageFailed ? (
+                  <div className="flex h-full w-full items-center justify-center text-lg font-bold text-[#C8860A]">
+                    JM
+                  </div>
+                ) : (
+                  <img
+                    src="/assets/founder/20230310_112138.jpg"
+                    alt="Jacques Alphonse MATOKO"
+                    className="h-full w-full object-cover"
+                    onError={() => setFounderImageFailed(true)}
+                  />
+                )}
+              </div>
+              <div className="min-w-0">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-[#C8860A]">
+                  Fondateur
+                </div>
+                <div className="mt-1 text-sm font-bold text-white">
+                  Jacques Alphonse MATOKO
+                </div>
+                <div className="mt-1 text-xs font-semibold text-gray-200">
+                  Fondateur, Securits Technologies
+                </div>
+                <div className="mt-1 text-xs leading-relaxed text-gray-300">
+                  Ingénieur QHSE — Chef de projet certifié MS Project
+                </div>
+                <div className="text-xs leading-relaxed text-gray-300">
+                  Conception électrique NF C 15-100 — Pointe-Noire, Congo
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
