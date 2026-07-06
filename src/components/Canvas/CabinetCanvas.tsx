@@ -94,14 +94,20 @@ export const CabinetCanvas: React.FC<CabinetCanvasProps> = ({
       const relativeX = canvasX - railX;
       const slot = Math.max(0, Math.round(relativeX / moduleWidthPx));
 
+      // Generate id once so we can select the freshly-dropped component below
+      const newId = 'comp_' + Math.random().toString(36).substr(2, 9);
+
       // Trigger drop insert
       addComponent(activeCabinetId, {
-        id: 'comp_' + Math.random().toString(36).substr(2, 9),
+        id: newId,
         type: dragData.type,
         widthModules: dragData.widthModules,
         rowIndex: closestRowIdx,
         properties: dragData.properties
       });
+
+      // Auto-select the freshly-dropped component so the PropertiesPanel updates immediately
+      selectComponent(newId);
     } catch (err) {
       console.error("Drop handling failed", err);
     }
