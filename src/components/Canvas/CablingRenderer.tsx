@@ -1,6 +1,111 @@
 import React from 'react';
-import { Group, Line, Rect, Circle, Path } from 'react-konva';
+import { Group, Line, Rect, Circle, Path, Text } from 'react-konva';
 import { ElectricalComponent, Cabinet } from '../../types/electrical';
+
+// =========================================================================
+// E. Cable bundle label (e.g. "3G2.5mm²") — appears along each load wire
+// =========================================================================
+const CableLabel: React.FC<{
+  x: number;
+  y: number;
+  main: string;
+  sub: string;
+}> = ({ x, y, main, sub }) => (
+  <Group x={x} y={y} listening={false}>
+    <Rect
+      x={-34}
+      y={-13}
+      width={68}
+      height={26}
+      fill="#F0ECE3"
+      stroke="#2C2C2A"
+      strokeWidth={0.7}
+      cornerRadius={3}
+      shadowColor="black"
+      shadowBlur={3}
+      shadowOpacity={0.22}
+      shadowOffset={{ x: 0, y: 1 }}
+    />
+    <Text
+      x={-34}
+      y={-10.5}
+      width={68}
+      text={main}
+      fontSize={9.5}
+      fontStyle="bold"
+      fill="#2C2C2A"
+      align="center"
+      fontFamily="monospace"
+    />
+    <Text
+      x={-34}
+      y={2}
+      width={68}
+      text={sub}
+      fontSize={7.2}
+      fill="#525252"
+      align="center"
+      fontFamily="monospace"
+    />
+  </Group>
+);
+
+// =========================================================================
+// F. Terminal designation tag (L1, N, PE, L1/L2/L3…) — conforms to single-
+// line schematic conventions used on Legrand/Hager terminal blocks.
+// =========================================================================
+const TerminalTag: React.FC<{ x: number; y: number; text: string }> = ({
+  x,
+  y,
+  text
+}) => (
+  <Group x={x} y={y} listening={false}>
+    <Rect
+      x={-10}
+      y={-3.6}
+      width={20}
+      height={7.2}
+      fill="#FFFFFF"
+      stroke="#2C2C2A"
+      strokeWidth={0.5}
+      cornerRadius={1.5}
+      shadowColor="black"
+      shadowBlur={2}
+      shadowOpacity={0.2}
+      shadowOffset={{ x: 0, y: 0.6 }}
+    />
+    <Text
+      x={-10}
+      y={-2.8}
+      width={20}
+      text={text}
+      fontSize={5}
+      fontStyle="bold"
+      fill="#2C2C2A"
+      align="center"
+      fontFamily="monospace"
+    />
+  </Group>
+);
+
+// Helper: build the cable section label like "3G2.5mm²" or "5G6mm²"
+const getCableMain = (props: ElectricalComponent['properties']): string => {
+  const isTri = props.voltageV === 400;
+  const conductors = isTri ? (props.poles === '4P' ? 5 : 4) : 3;
+  return `${conductors}G${props.cableSectionMm2}mm²`;
+};
+
+// Helper: secondary line on cable label (calibre + longueur)
+const getCableSub = (props: ElectricalComponent['properties']): string =>
+  `${props.ratingA}A · ${props.cableLengthM}m`;
+
+// Helper: phase terminal designation (single phase → "L1", tri → "L1/L2/L3")
+const getPhaseTag = (props: ElectricalComponent['properties']): string => {
+  if (props.voltageV === 400) {
+    return props.poles === '4P' ? 'L1/L2/L3/N' : 'L1/L2/L3';
+  }
+  return 'L1';
+};
 
 interface CablingRendererProps {
   cabinet: Cabinet;
@@ -195,6 +300,7 @@ export const CablingRenderer: React.FC<CablingRendererProps> = ({
             {rowComponents.map((c) => {
               const { topX } = getComponentTerminals(c);
               const phaseColor = c.properties.voltageV === 400 ? WIRE_COLORS.phaseTri : WIRE_COLORS.phase;
+              const phaseTag = getPhaseTag(c.properties);
               return (
                 <Group key={`comb-link-${c.id}`}>
                   <Line
@@ -221,6 +327,9 @@ export const CablingRenderer: React.FC<CablingRendererProps> = ({
                     <Line points={[-2.7, 0, 2.7, 0]} stroke="#7dd3fc" strokeWidth={0.9} />
                     <Line points={[0, -2.3, 0, 2.3]} stroke="#7dd3fc" strokeWidth={0.9} />
                   </Group>
+                  {/* F. Terminal designation tags (L1 / N) for comb links */}
+                  <TerminalTag x={topX + 14} y={rY + 18} text={phaseTag} />
+                  <TerminalTag x={topX - 14} y={rY + 18} text="N" />
                 </Group>
               );
             })}
@@ -382,6 +491,61 @@ export const CablingRenderer: React.FC<CablingRendererProps> = ({
       {/* ----------------------------------------------------
           3. INTER-ROW CONNECTION (Liaison Inter-Rangées)
           ---------------------------------------------------- */}
+      {/* F. Terminal designation tags for inter-row connection blocks */}
+      {(() => {
+        const rows = railYPositions
+          .map((_, rowIndex) => ({
+            rowIndex,
+            rowComponents: components.filter((c) => c.rowIndex === rowIndex)
+          }));
+        return rows
+          .filter((row) => row.rowIndex > 0 && row.rowComponents[0])
+          .map(({ rowIndex, rowComponents }) => {
+            const target = rowComponents[0];
+            const tt = getComponentTerminals(target);
+            const phaseTag = getPhaseTag(target.properties);
+            return (
+              <Group key={`inter-row-tags-${rowIndex}`} listening={false}>
+                <TerminalTag x={tt.topX + 14} y={tt.topY} text={phaseTag} />
+                <TerminalTag x={tt.topX - 14} y={tt.topY} text="N" />
+              </Group>
+            );
+          });
+      })()}
+
+      {/* ----------------------------------------------------
+          4. LABELS OVERLAY (E: cable section labels + F: terminal tags)
+          Drawn LAST so they sit on top of wires and blocks.
+          ---------------------------------------------------- */}
+      {components.map((c) => {
+        if (c.type !== 'load') return null;
+        const { bottomX, bottomY } = getComponentTerminals(c);
+        const props = c.properties;
+        // Bundle goes from (bottomX - 3, bottomY + 1) to (destX - 2, destY)
+        const destX = bottomX + ((c.moduleIndex + c.widthModules) % 2 === 0 ? 12 : -12);
+        const destY = bottomY + 60;
+        const midX = (bottomX + destX - 5) / 2;
+        const midY = (bottomY + destY + 1) / 2;
+        // Place label offset to the side of the bundle so it doesn't sit on the wires
+        const labelOffsetX = (c.moduleIndex + c.widthModules) % 2 === 0 ? 28 : -28;
+        const phaseTag = getPhaseTag(props);
+        return (
+          <Group key={`labels-${c.id}`}>
+            {/* E. Cable bundle section label (e.g. "3G2.5mm²" / "16A · 12m") */}
+            <CableLabel
+              x={midX + labelOffsetX}
+              y={midY}
+              main={getCableMain(props)}
+              sub={getCableSub(props)}
+            />
+            {/* F. Terminal designation tags on the load's terminal blocks */}
+            <TerminalTag x={bottomX + 16} y={bottomY + 1} text={phaseTag} />
+            <TerminalTag x={bottomX - 16} y={bottomY + 1} text="N" />
+            <TerminalTag x={bottomX} y={bottomY + 16} text="PE" />
+          </Group>
+        );
+      })}
+
       {(() => {
         const rows = railYPositions
           .map((_, rowIndex) => ({
