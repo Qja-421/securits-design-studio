@@ -72,8 +72,68 @@ export const CablingRenderer: React.FC<CablingRendererProps> = ({
   const earthBarX = railX + 50;
   const earthBarY = railYPositions[railYPositions.length - 1] + componentHeight + 50;
 
+  // Cable tray (goulotte horizontale) sits just under each row of components,
+  // in the cabling channel between this rail and the next. It collects all
+  // vertical wire drops and gives the cabinet a realistic look.
+  const cableTrayHeight = 18;
+  const cableTrayYOffset = componentHeight + 6;
+
   return (
     <Group>
+      {/* ----------------------------------------------------
+          0. CABLE TRAYS (Goulottes horizontales par rangée)
+          ----------------------------------------------------
+          Drawn BEFORE the wires so cables visually sit inside the tray. */}
+      {railYPositions.map((rY, rowIndex) => {
+        const trayY = rY + cableTrayYOffset;
+        const hasNextRow = rowIndex < railYPositions.length - 1;
+        return (
+          <Group key={`tray-${rowIndex}`} listening={false}>
+            {/* Tray outer shell (PVC gray, slight 3D feel via gradient) */}
+            <Rect
+              x={railX - 8}
+              y={trayY}
+              width={railWidth + 16}
+              height={cableTrayHeight}
+              fillLinearGradientStartPoint={{ x: 0, y: trayY }}
+              fillLinearGradientEndPoint={{ x: 0, y: trayY + cableTrayHeight }}
+              fillLinearGradientColorStops={[0, '#9ca3af', 0.4, '#d1d5db', 0.6, '#e5e7eb', 1, '#6b7280']}
+              stroke="#374151"
+              strokeWidth={0.8}
+              cornerRadius={2}
+              shadowColor="black"
+              shadowBlur={3}
+              shadowOffset={{ x: 0, y: 2 }}
+              shadowOpacity={0.2}
+            />
+            {/* Tray opening slot (darker slit where wires enter) */}
+            <Rect
+              x={railX - 4}
+              y={trayY + cableTrayHeight / 2 - 1.5}
+              width={railWidth + 8}
+              height={3}
+              fill="#1f2937"
+              cornerRadius={1}
+            />
+            {/* Tray mounting brackets on each side */}
+            <Rect x={railX - 12} y={trayY + 3} width={4} height={cableTrayHeight - 6} fill="#4b5563" cornerRadius={0.5} />
+            <Rect x={railX + railWidth + 8} y={trayY + 3} width={4} height={cableTrayHeight - 6} fill="#4b5563" cornerRadius={0.5} />
+            {/* Vertical drop conduit from previous row's exit down into this tray */}
+            {!hasNextRow && (
+              <Rect
+                x={railX - 8}
+                y={trayY + cableTrayHeight}
+                width={railWidth + 16}
+                height={Math.max(20, earthBarY - (trayY + cableTrayHeight) - 12)}
+                fill="#1f2937"
+                cornerRadius={2}
+                opacity={0.85}
+              />
+            )}
+          </Group>
+        );
+      })}
+
       {/* ----------------------------------------------------
           1. HORIZONTAL DISTRIBUTION COMBS (Peignes de pontage)
           ---------------------------------------------------- */}
@@ -133,8 +193,18 @@ export const CablingRenderer: React.FC<CablingRendererProps> = ({
                     strokeWidth={3.2}
                     lineCap="round"
                   />
-                  <Circle x={topX + 3} y={rY + 15} radius={1.8} fill={WIRE_COLORS.ferrule} />
-                  <Circle x={topX - 3} y={rY + 20} radius={1.8} fill={WIRE_COLORS.ferrule} />
+                  {/* Phase terminal block (bornier à vis) above the component */}
+                  <Group x={topX + 3} y={rY + 15}>
+                    <Rect x={-3.2} y={-2.2} width={6.4} height={4.4} fill="#1f2937" stroke="#000" strokeWidth={0.4} cornerRadius={0.6} />
+                    <Line points={[-1.6, 0, 1.6, 0]} stroke="#fbbf24" strokeWidth={0.5} />
+                    <Line points={[0, -1.4, 0, 1.4]} stroke="#fbbf24" strokeWidth={0.5} />
+                  </Group>
+                  {/* Neutral terminal block above the component */}
+                  <Group x={topX - 3} y={rY + 20}>
+                    <Rect x={-3.2} y={-2.2} width={6.4} height={4.4} fill="#0c4a6e" stroke="#000" strokeWidth={0.4} cornerRadius={0.6} />
+                    <Line points={[-1.6, 0, 1.6, 0]} stroke="#7dd3fc" strokeWidth={0.5} />
+                    <Line points={[0, -1.4, 0, 1.4]} stroke="#7dd3fc" strokeWidth={0.5} />
+                  </Group>
                 </Group>
               );
             })}
@@ -170,9 +240,17 @@ export const CablingRenderer: React.FC<CablingRendererProps> = ({
               strokeWidth={wireWidth}
               lineCap="round"
             />
-            {/* Neutral Terminal crimps */}
-            <Circle x={bottomX - 2.5} y={bottomY + 1} radius={1.8} fill={WIRE_COLORS.ferrule} />
-            <Circle x={destX - 1.5} y={destY} radius={1.8} fill={WIRE_COLORS.ferrule} />
+            {/* Neutral Terminal blocks (bornes à vis) at both ends */}
+            <Group x={bottomX - 2.5} y={bottomY + 1}>
+              <Rect x={-3.2} y={-2.2} width={6.4} height={4.4} fill="#0c4a6e" stroke="#000" strokeWidth={0.4} cornerRadius={0.6} />
+              <Line points={[-1.6, 0, 1.6, 0]} stroke="#7dd3fc" strokeWidth={0.5} />
+              <Line points={[0, -1.4, 0, 1.4]} stroke="#7dd3fc" strokeWidth={0.5} />
+            </Group>
+            <Group x={destX - 1.5} y={destY}>
+              <Rect x={-3.2} y={-2.2} width={6.4} height={4.4} fill="#0c4a6e" stroke="#000" strokeWidth={0.4} cornerRadius={0.6} />
+              <Line points={[-1.6, 0, 1.6, 0]} stroke="#7dd3fc" strokeWidth={0.5} />
+              <Line points={[0, -1.4, 0, 1.4]} stroke="#7dd3fc" strokeWidth={0.5} />
+            </Group>
 
             {/* Phase Wire (Brown or Black) */}
             <Path
@@ -181,9 +259,17 @@ export const CablingRenderer: React.FC<CablingRendererProps> = ({
               strokeWidth={wireWidth}
               lineCap="round"
             />
-            {/* Phase Terminal crimps */}
-            <Circle x={bottomX + 2.5} y={bottomY + 1} radius={1.8} fill={WIRE_COLORS.ferrule} />
-            <Circle x={destX + 1.5} y={destY} radius={1.8} fill={WIRE_COLORS.ferrule} />
+            {/* Phase Terminal blocks at both ends */}
+            <Group x={bottomX + 2.5} y={bottomY + 1}>
+              <Rect x={-3.2} y={-2.2} width={6.4} height={4.4} fill="#1f2937" stroke="#000" strokeWidth={0.4} cornerRadius={0.6} />
+              <Line points={[-1.6, 0, 1.6, 0]} stroke="#fbbf24" strokeWidth={0.5} />
+              <Line points={[0, -1.4, 0, 1.4]} stroke="#fbbf24" strokeWidth={0.5} />
+            </Group>
+            <Group x={destX + 1.5} y={destY}>
+              <Rect x={-3.2} y={-2.2} width={6.4} height={4.4} fill="#1f2937" stroke="#000" strokeWidth={0.4} cornerRadius={0.6} />
+              <Line points={[-1.6, 0, 1.6, 0]} stroke="#fbbf24" strokeWidth={0.5} />
+              <Line points={[0, -1.4, 0, 1.4]} stroke="#fbbf24" strokeWidth={0.5} />
+            </Group>
 
             {/* Earth Wire (Yellow/Green alternating striped representation) */}
             {/* We draw a yellow curve, then a dashed green curve on top of it */}
@@ -200,8 +286,12 @@ export const CablingRenderer: React.FC<CablingRendererProps> = ({
               dash={[7, 6]}
               lineCap="round"
             />
-            {/* Earth crimps */}
-            <Circle x={bottomX} y={bottomY + 4} radius={1.8} fill={WIRE_COLORS.ferrule} />
+            {/* Earth terminal block at the component end */}
+            <Group x={bottomX} y={bottomY + 4}>
+              <Rect x={-3.2} y={-2.2} width={6.4} height={4.4} fill="#15803d" stroke="#000" strokeWidth={0.4} cornerRadius={0.6} />
+              <Line points={[-1.6, 0, 1.6, 0]} stroke="#fde047" strokeWidth={0.5} />
+              <Line points={[0, -1.4, 0, 1.4]} stroke="#fde047" strokeWidth={0.5} />
+            </Group>
 
             {/* General cable exit conduit representation */}
             <Rect
@@ -218,20 +308,41 @@ export const CablingRenderer: React.FC<CablingRendererProps> = ({
 
       {/* Earth bar drawing at the base */}
       <Group x={earthBarX} y={earthBarY}>
+        {/* Mounting brackets (DIN rail clips) on each side */}
+        <Rect x={-4} y={-10} width={4} height={12} fill="#4b5563" cornerRadius={0.5} />
+        <Rect x={180} y={-10} width={4} height={12} fill="#4b5563" cornerRadius={0.5} />
+        {/* Brass ground terminal bar with metallic gradient */}
         <Rect
           x={0}
           y={-8}
           width={180}
           height={8}
-          fill="#eab308" // Brass ground terminal bar
-          stroke="#ca8a04"
+          fillLinearGradientStartPoint={{ x: 0, y: -8 }}
+          fillLinearGradientEndPoint={{ x: 0, y: 0 }}
+          fillLinearGradientColorStops={[0, '#fde047', 0.5, '#eab308', 1, '#a16207']}
+          stroke="#854d0e"
           strokeWidth={1}
           cornerRadius={1}
+          shadowColor="black"
+          shadowBlur={2}
+          shadowOffset={{ x: 0, y: 1 }}
+          shadowOpacity={0.25}
         />
-        {/* Terminal screws on the earth bar */}
-        {Array.from({ length: 12 }).map((_, i) => (
-          <Circle key={`es-${i}`} x={12 + i * 14} y={-4} radius={2} fill="#78350f" stroke="#111" strokeWidth={0.5} />
-        ))}
+        {/* Terminal blocks + cross-head screws for each connection */}
+        {Array.from({ length: 12 }).map((_, i) => {
+          const cx = 12 + i * 14;
+          return (
+            <Group key={`es-${i}`}>
+              {/* Block base */}
+              <Rect x={cx - 3} y={-7} width={6} height={6} fill="#0c4a6e" stroke="#000" strokeWidth={0.4} cornerRadius={0.6} />
+              {/* Screw body */}
+              <Circle x={cx} y={-4} radius={1.8} fill="#78350f" stroke="#111" strokeWidth={0.5} />
+              {/* Cross-head (+) */}
+              <Line points={[cx - 1.2, -4, cx + 1.2, -4]} stroke="#fbbf24" strokeWidth={0.5} />
+              <Line points={[cx, -5.2, cx, -2.8]} stroke="#fbbf24" strokeWidth={0.5} />
+            </Group>
+          );
+        })}
       </Group>
 
       {/* ----------------------------------------------------
@@ -294,8 +405,18 @@ export const CablingRenderer: React.FC<CablingRendererProps> = ({
                         strokeWidth={4.5}
                         lineCap="round"
                       />
-                      <Circle x={targetTerminals.topX - 3} y={targetTerminals.topY} radius={2} fill={WIRE_COLORS.ferrule} />
-                      <Circle x={targetTerminals.topX + 3} y={targetTerminals.topY} radius={2} fill={WIRE_COLORS.ferrule} />
+                      {/* Inter-row neutral terminal block (bornier) */}
+                      <Group x={targetTerminals.topX - 3} y={targetTerminals.topY}>
+                        <Rect x={-3.4} y={-2.4} width={6.8} height={4.8} fill="#0c4a6e" stroke="#000" strokeWidth={0.4} cornerRadius={0.6} />
+                        <Line points={[-1.6, 0, 1.6, 0]} stroke="#7dd3fc" strokeWidth={0.5} />
+                        <Line points={[0, -1.4, 0, 1.4]} stroke="#7dd3fc" strokeWidth={0.5} />
+                      </Group>
+                      {/* Inter-row phase terminal block (bornier) */}
+                      <Group x={targetTerminals.topX + 3} y={targetTerminals.topY}>
+                        <Rect x={-3.4} y={-2.4} width={6.8} height={4.8} fill="#1f2937" stroke="#000" strokeWidth={0.4} cornerRadius={0.6} />
+                        <Line points={[-1.6, 0, 1.6, 0]} stroke="#fbbf24" strokeWidth={0.5} />
+                        <Line points={[0, -1.4, 0, 1.4]} stroke="#fbbf24" strokeWidth={0.5} />
+                      </Group>
                     </>
                   )}
                 </Group>
@@ -307,3 +428,4 @@ export const CablingRenderer: React.FC<CablingRendererProps> = ({
     </Group>
   );
 };
+
