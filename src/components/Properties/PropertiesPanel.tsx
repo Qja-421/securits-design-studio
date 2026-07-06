@@ -170,7 +170,7 @@ export const PropertiesPanel: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {/* 2. Rating */}
             <div className="flex flex-col">
               <label className="text-[10px] text-gray-400 font-semibold mb-1 uppercase tracking-wider">Calibre (In)</label>
@@ -223,7 +223,7 @@ export const PropertiesPanel: React.FC = () => {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {/* Power */}
                 <div className="flex flex-col">
                   <label className="text-[10px] text-gray-400 font-semibold mb-1 uppercase tracking-wider">Puissance (W)</label>
@@ -251,7 +251,7 @@ export const PropertiesPanel: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {/* Cable section */}
                 <div className="flex flex-col">
                   <label className="text-[10px] text-gray-400 font-semibold mb-1 uppercase tracking-wider">Section (mm²)</label>
@@ -283,7 +283,7 @@ export const PropertiesPanel: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {/* Pose Mode */}
                 <div className="flex flex-col">
                   <label className="text-[10px] text-gray-400 font-semibold mb-1 uppercase tracking-wider">Mode de pose</label>
@@ -320,7 +320,7 @@ export const PropertiesPanel: React.FC = () => {
 
           {/* Differential specific properties */}
           {isDiff && (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <div className="flex flex-col">
                 <label className="text-[10px] text-gray-400 font-semibold mb-1 uppercase tracking-wider">Type Différentiel</label>
                 <select
@@ -384,7 +384,7 @@ export const PropertiesPanel: React.FC = () => {
         {isLoad && (
           <div className="mt-2 border-t border-white/10 pt-3 space-y-2">
             <span className="text-[10px] text-brand-orange font-bold uppercase tracking-wider">Résultats de la note de calcul</span>
-            <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
               <div className="bg-black/20 p-2 rounded border border-white/5">
                 <div className="text-[9px] text-gray-400 font-semibold uppercase">Courant d'emploi (Ib)</div>
                 <div className="text-sm font-bold text-white mt-0.5">{metrics.ibA} A</div>

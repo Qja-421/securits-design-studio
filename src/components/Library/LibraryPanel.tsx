@@ -552,7 +552,7 @@ export const LibraryPanel: React.FC = () => {
                       </div>
 
                       {/* Realistic Thumbnail preview on hover overlay */}
-                      <div className="hidden group-hover:block absolute left-full ml-2 top-0 z-50 p-2 bg-brand-darkGray border border-brand-blue/50 rounded-md shadow-lg w-48 text-[10px] text-gray-300 pointer-events-none">
+                      <div className="hidden lg:group-hover:block absolute left-full ml-2 top-0 z-50 p-2 bg-brand-darkGray border border-brand-blue/50 rounded-md shadow-lg w-48 text-[10px] text-gray-300 pointer-events-none">
                         <div className="font-bold text-xs text-brand-orange border-b border-white/10 pb-1 mb-1">
                           {preset.name}
                         </div>

@@ -155,25 +155,25 @@ export const PowerBalance: React.FC = () => {
 
       <div className="space-y-2.5 text-xs">
         {/* Installed vs Simultaneous */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap items-center justify-between gap-1">
           <span className="text-gray-400">Puissance Installée :</span>
           <span className="font-bold text-white">{(installedPowerW / 1000).toFixed(2)} kW</span>
         </div>
 
         {hasMixedPhases && (
           <>
-            <div className="flex justify-between items-center">
+            <div className="flex flex-wrap items-center justify-between gap-1">
               <span className="text-gray-400">Puissance Mono (230V) :</span>
               <span className="font-bold text-white">{(singlePhasePowerW / 1000).toFixed(2)} kW</span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex flex-wrap items-center justify-between gap-1">
               <span className="text-gray-400">Puissance Tri (400V) :</span>
               <span className="font-bold text-white">{(threePhasePowerW / 1000).toFixed(2)} kW</span>
             </div>
           </>
         )}
 
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap items-center justify-between gap-1">
           <span className="text-gray-400">Coeff. Foisonnement :</span>
           <div className="flex items-center gap-1.5">
             <input
@@ -191,19 +191,19 @@ export const PowerBalance: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap items-center justify-between gap-1">
           <span className="text-gray-400">Puissance Simultanée :</span>
           <span className="font-bold text-white">{(simultaneousPowerW / 1000).toFixed(2)} kW</span>
         </div>
 
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap items-center justify-between gap-1">
           <span className="text-gray-400">Réseau d'alimentation :</span>
           <span className="font-bold text-brand-blue">
             {hasMixedPhases ? 'Mixte 230V Mono + 400V Tri' : hasThreePhase ? '400V Triphasé (3P+N)' : '230V Monophasé (1P+N)'}
           </span>
         </div>
 
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap items-center justify-between gap-1">
           <span className="text-gray-400">Courant de Ligne estimé :</span>
           <span className="font-bold text-white">
             {estimatedCurrentA.toFixed(1)} A {hasThreePhase ? '/ phase' : ''}
@@ -217,11 +217,11 @@ export const PowerBalance: React.FC = () => {
         )}
 
         <div className="border-t border-white/5 pt-2.5 space-y-1.5">
-          <div className="flex justify-between items-center text-[10px] text-gray-400 uppercase font-semibold">
+          <div className="flex flex-wrap items-center justify-between gap-1 text-[10px] text-gray-400 uppercase font-semibold">
             <span>Abonnement Conseillé</span>
             <span>Intensité Disjoncteur</span>
           </div>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-wrap items-center justify-between gap-1">
             <span className="text-sm font-bold text-brand-orange">{recommendedKVA} kVA</span>
             <span className="text-sm font-bold text-brand-blue">{recommendedBreakerA} A</span>
           </div>
@@ -229,7 +229,7 @@ export const PowerBalance: React.FC = () => {
 
         {/* Charge Progress bar */}
         <div className="space-y-1 pt-1">
-          <div className="flex justify-between items-center text-[9px] text-gray-400">
+          <div className="flex flex-wrap items-center justify-between gap-1 text-[9px] text-gray-400">
             <span>Taux de Charge Estimé :</span>
             <span className={chargePercent > 80 ? 'text-brand-orange font-bold' : 'text-green-400'}>
               {chargePercent.toFixed(1)}%

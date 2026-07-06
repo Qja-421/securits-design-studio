@@ -155,11 +155,12 @@ export const CabinetCanvas: React.FC<CabinetCanvasProps> = ({
       ref={containerRef}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      className={`relative w-full h-full overflow-hidden flex items-center justify-center transition-all ${
+      className={`relative h-full w-full overflow-auto flex items-start justify-start transition-all lg:items-center lg:justify-center lg:overflow-hidden ${
         presentationMode 
           ? 'bg-gradient-to-tr from-[#141413] via-[#222220] to-[#1e1e1d]' 
           : 'bg-[#e5e7eb] bg-[radial-gradient(#d1d5db_1px,transparent_1px)] [background-size:16px_16px]'
       }`}
+      style={{ touchAction: 'pan-x pan-y' }}
       onClick={() => selectComponent(null)}
     >
       {/* Visual Mode Label */}

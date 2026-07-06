@@ -10,7 +10,7 @@ import { AIChat } from './components/AI/AIChat';
 import { PropositionComparePanel } from './components/Proposals/PropositionComparePanel';
 import { OnboardingTour, useShouldShowTour } from './components/Onboarding/OnboardingTour';
 import { exportToPDF, exportToWord, exportToExcel } from './utils/exportUtils';
-import { PanelLeft, PanelRight, PanelLeftClose, PanelRightClose } from 'lucide-react';
+import { LayoutGrid, PanelLeft, PanelRight, PanelLeftClose, PanelRightClose, SlidersHorizontal } from 'lucide-react';
 
 function App() {
   const { initNewProject, cabinets, activeCabinetId, details, loadProject } = useProjectStore();
@@ -19,6 +19,7 @@ function App() {
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
   const [showTour, setShowTour] = useState(false);
+  const [mobilePanel, setMobilePanel] = useState<'catalogue' | 'canvas' | 'properties'>('canvas');
 
   // Initialize project on first load from IndexedDB, or create new if empty
   useEffect(() => {
@@ -71,7 +72,7 @@ function App() {
       />
 
       {/* ── BODY: Sidebars + Canvas + Properties ── */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
 
         {/* === PRESENTATION MODE: full-width 3-prop compare panel === */}
         {presentationMode ? (
@@ -79,33 +80,53 @@ function App() {
             <PropositionComparePanel onClose={() => setPresentationMode(false)} />
           </div>
         ) : (
-          <>
+          <div className="flex flex-1 min-h-0 flex-col overflow-hidden md:flex-row">
+            <div className="grid grid-cols-3 gap-1 border-b border-white/10 bg-black/35 p-1.5 md:hidden">
+              {[
+                { id: 'catalogue', label: 'Catalogue', icon: <PanelLeft size={14} /> },
+                { id: 'canvas', label: 'Coffret', icon: <LayoutGrid size={14} /> },
+                { id: 'properties', label: 'Propriétés', icon: <SlidersHorizontal size={14} /> }
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setMobilePanel(item.id as 'catalogue' | 'canvas' | 'properties')}
+                  className={`flex items-center justify-center gap-1 rounded px-2 py-2 text-[11px] font-bold transition ${
+                    mobilePanel === item.id
+                      ? 'bg-brand-blue text-brand-black'
+                      : 'bg-brand-darkGray text-gray-300'
+                  }`}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+
             {/* LEFT SIDE: Coffrets nav + Library */}
-            {leftSidebarOpen && (
-              <div className="flex flex-col w-56 shrink-0 border-r border-white/10 overflow-hidden">
-                {/* Mes Coffrets panel */}
-                <div className="h-48 border-b border-white/10 overflow-hidden shrink-0">
-                  <CoffretsSidebar />
-                </div>
-                {/* Library panel */}
-                <div className="flex-1 overflow-hidden">
-                  <LibraryPanel />
-                </div>
+            <div className={`${mobilePanel === 'catalogue' ? 'flex' : 'hidden'} ${leftSidebarOpen ? 'md:flex' : 'md:hidden'} flex-1 flex-col overflow-hidden border-r border-white/10 md:w-48 md:flex-none md:shrink-0 lg:w-56`}>
+              {/* Mes Coffrets panel */}
+              <div className="h-48 border-b border-white/10 overflow-hidden shrink-0">
+                <CoffretsSidebar />
               </div>
-            )}
+              {/* Library panel */}
+              <div className="flex-1 overflow-hidden">
+                <LibraryPanel />
+              </div>
+            </div>
 
             {/* Toggle Left Sidebar button */}
             <button
               onClick={() => setLeftSidebarOpen((v) => !v)}
               title={leftSidebarOpen ? 'Replier le panneau gauche' : 'Ouvrir le panneau gauche'}
-              className="absolute left-0 bottom-6 z-20 bg-brand-darkGray border border-white/10 border-l-0 rounded-r-lg px-1.5 py-2 text-gray-400 hover:text-brand-blue hover:bg-black/40 transition shadow-lg"
-              style={{ left: leftSidebarOpen ? '222px' : '0px' }}
+              className={`absolute bottom-6 z-20 hidden bg-brand-darkGray border border-white/10 border-l-0 rounded-r-lg px-1.5 py-2 text-gray-400 hover:text-brand-blue hover:bg-black/40 transition shadow-lg md:block ${
+                leftSidebarOpen ? 'md:left-48 lg:left-56' : 'md:left-0'
+              }`}
             >
               {leftSidebarOpen ? <PanelLeftClose size={14} /> : <PanelLeft size={14} />}
             </button>
 
             {/* CENTER: Cabinet Canvas */}
-            <div className="flex-1 overflow-hidden relative">
+            <div className={`${mobilePanel === 'canvas' ? 'block' : 'hidden'} relative min-w-0 flex-1 overflow-hidden md:block`}>
               <CabinetCanvas
                 zoom={zoom}
                 setZoom={setZoom}
@@ -117,26 +138,25 @@ function App() {
             <button
               onClick={() => setRightPanelOpen((v) => !v)}
               title={rightPanelOpen ? 'Replier le panneau droit' : 'Ouvrir le panneau droit'}
-              className="absolute right-0 bottom-6 z-20 bg-brand-darkGray border border-white/10 border-r-0 rounded-l-lg px-1.5 py-2 text-gray-400 hover:text-brand-blue hover:bg-black/40 transition shadow-lg"
-              style={{ right: rightPanelOpen ? '220px' : '0px' }}
+              className={`absolute bottom-6 z-20 hidden bg-brand-darkGray border border-white/10 border-r-0 rounded-l-lg px-1.5 py-2 text-gray-400 hover:text-brand-blue hover:bg-black/40 transition shadow-lg md:block ${
+                rightPanelOpen ? 'md:right-52 lg:right-56' : 'md:right-0'
+              }`}
             >
               {rightPanelOpen ? <PanelRightClose size={14} /> : <PanelRight size={14} />}
             </button>
 
             {/* RIGHT SIDE: Properties + Power Balance */}
-            {rightPanelOpen && (
-              <div className="w-56 shrink-0 flex flex-col border-l border-white/10 overflow-hidden">
-                {/* Properties Panel (upper) */}
-                <div className="flex-1 overflow-hidden p-2">
-                  <PropertiesPanel />
-                </div>
-                {/* Power Balance (lower, permanent) */}
-                <div className="shrink-0 p-2 border-t border-white/10">
-                  <PowerBalance />
-                </div>
+            <div className={`${mobilePanel === 'properties' ? 'flex' : 'hidden'} ${rightPanelOpen ? 'md:flex' : 'md:hidden'} flex-1 flex-col overflow-hidden border-l border-white/10 md:w-52 md:flex-none md:shrink-0 lg:w-56`}>
+              {/* Properties Panel (upper) */}
+              <div className="flex-1 overflow-hidden p-2">
+                <PropertiesPanel />
               </div>
-            )}
-          </>
+              {/* Power Balance (lower, permanent) */}
+              <div className="shrink-0 p-2 border-t border-white/10">
+                <PowerBalance />
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
@@ -147,4 +167,3 @@ function App() {
 }
 
 export default App;
-

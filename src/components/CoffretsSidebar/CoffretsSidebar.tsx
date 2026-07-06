@@ -48,7 +48,7 @@ export const CoffretsSidebar: React.FC = () => {
   };
 
   return (
-    <div className="bg-brand-darkGray text-white border-r border-white/10 flex flex-col h-full select-none">
+    <div className="bg-brand-darkGray text-white border-r border-white/10 flex h-full min-h-0 flex-col select-none">
       {/* Title Header */}
       <div className="p-3 bg-black/35 flex justify-between items-center border-b border-white/5">
         <div className="flex items-center space-x-1.5 text-brand-blue">
@@ -109,7 +109,7 @@ export const CoffretsSidebar: React.FC = () => {
               </div>
 
               {/* Actions list */}
-              <div className="flex items-center space-x-1 opacity-0 hover:opacity-100 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+              <div className="flex items-center space-x-1 opacity-100 transition-opacity sm:opacity-0 sm:hover:opacity-100 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();

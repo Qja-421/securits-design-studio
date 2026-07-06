@@ -101,8 +101,8 @@ export const RibbonBar: React.FC<RibbonBarProps> = ({
   return (
     <div className="bg-brand-darkGray text-white shadow-md border-b border-white/10 select-none">
       {/* Top Brand Header */}
-      <div className="px-4 py-2 bg-black/40 flex justify-between items-center text-xs">
-        <div className="flex items-center space-x-2">
+      <div className="flex flex-col gap-2 bg-black/40 px-3 py-2 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-4">
+        <div className="flex min-w-0 items-center space-x-2">
           {/* SVG logo Securits Tech: circle with omega inside and wifi waves */}
           <div className="relative w-8 h-8 flex items-center justify-center bg-brand-blue/20 rounded-full border border-brand-blue/50">
             <span className="text-brand-blue font-bold text-lg leading-none">Ω</span>
@@ -110,14 +110,14 @@ export const RibbonBar: React.FC<RibbonBarProps> = ({
             {/* WiFi icon representations */}
             <div className="absolute -top-1 -right-1 text-[8px] text-brand-blue">📡</div>
           </div>
-          <div>
+          <div className="min-w-0">
             <h1 className="font-bold text-sm tracking-wide text-brand-blue uppercase">Securits Tech</h1>
-            <p className="text-[10px] text-gray-400">Pointe-Noire, Congo · Jacques Alphonse MATOKO</p>
+            <p className="truncate text-[10px] text-gray-400">Pointe-Noire, Congo · Jacques Alphonse MATOKO</p>
           </div>
         </div>
 
         {/* Multi-Proposal Tab Switcher */}
-        <div className="flex items-center space-x-2">
+        <div className="flex w-full items-center space-x-2 overflow-x-auto pb-1 sm:w-auto sm:pb-0">
           <span className="text-[10px] text-gray-400 font-medium">PROPOSITION CLIENT :</span>
           <div className="flex bg-black/60 p-0.5 rounded-lg border border-white/10">
             {(['prop1', 'prop2', 'prop3'] as const).map((prop) => {
@@ -203,7 +203,7 @@ export const RibbonBar: React.FC<RibbonBarProps> = ({
       </div>
 
       {/* Tabs list */}
-      <div className="flex bg-black/20 border-b border-white/5 text-xs px-2">
+      <div className="flex overflow-x-auto bg-black/20 border-b border-white/5 text-xs px-2">
         {[
           { id: 'accueil', label: 'ACCUEIL' },
           { id: 'edition', label: 'ÉDITION PROJET' },
@@ -215,7 +215,7 @@ export const RibbonBar: React.FC<RibbonBarProps> = ({
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
-            className={`px-4 py-2 font-medium tracking-wide transition-all border-b-2 ${
+            className={`shrink-0 whitespace-nowrap px-3 py-2 font-medium tracking-wide transition-all border-b-2 sm:px-4 ${
               activeTab === tab.id
                 ? 'border-brand-orange text-brand-orange bg-brand-darkGray/80'
                 : 'border-transparent text-gray-300 hover:text-white hover:bg-white/5'
@@ -227,10 +227,10 @@ export const RibbonBar: React.FC<RibbonBarProps> = ({
       </div>
 
       {/* Tab Contents Panels */}
-      <div className="p-3 bg-brand-darkGray/60 min-h-[64px] flex items-center">
+      <div className="flex min-h-[64px] items-center overflow-x-auto bg-brand-darkGray/60 p-2 sm:p-3">
         {/* ACCUEIL PANEL */}
         {activeTab === 'accueil' && (
-          <div className="flex items-center space-x-6">
+          <div className="flex min-w-max items-center space-x-4 sm:space-x-6">
             <div className="flex flex-col items-center border-r border-white/10 pr-4">
               <span className="text-[10px] text-gray-400 mb-1 font-semibold uppercase tracking-wider">Historique</span>
               <div className="flex space-x-1">
@@ -320,7 +320,7 @@ export const RibbonBar: React.FC<RibbonBarProps> = ({
 
         {/* ÉDITION PROJET PANEL */}
         {activeTab === 'edition' && (
-          <div className="grid grid-cols-5 gap-3 w-full max-w-5xl">
+          <div className="grid min-w-[720px] grid-cols-5 gap-3 w-full max-w-5xl md:min-w-0">
             <div className="flex flex-col">
               <label className="text-[9px] text-gray-400 font-semibold mb-1 uppercase tracking-wider">Nom du Projet</label>
               <input
@@ -376,7 +376,7 @@ export const RibbonBar: React.FC<RibbonBarProps> = ({
 
         {/* CONCEPTION COFFRET PANEL */}
         {activeTab === 'conception' && activeCabinet && (
-          <div className="flex items-center space-x-6">
+          <div className="flex min-w-max items-center space-x-4 sm:space-x-6">
             <div className="flex flex-col items-center border-r border-white/10 pr-4">
               <span className="text-[10px] text-gray-400 mb-1 font-semibold uppercase tracking-wider">Rails DIN (Rangées)</span>
               <div className="flex items-center space-x-1">
@@ -437,7 +437,7 @@ export const RibbonBar: React.FC<RibbonBarProps> = ({
 
         {/* VALIDATION PANEL */}
         {activeTab === 'validation' && (
-          <div className="flex items-center space-x-3 w-full overflow-x-auto py-1">
+          <div className="flex min-w-max items-center space-x-3 w-full overflow-x-auto py-1">
             {violations.length === 0 ? (
               <div className="flex items-center space-x-2 text-green-400 text-xs font-semibold">
                 <CheckCircle size={18} />
@@ -476,7 +476,7 @@ export const RibbonBar: React.FC<RibbonBarProps> = ({
 
         {/* DOCUMENTS EXPORTS PANEL */}
         {activeTab === 'documents' && (
-          <div className="flex items-center space-x-3">
+          <div className="flex min-w-max items-center space-x-3">
             <button
               onClick={onExportPDF}
               className="flex items-center space-x-2 px-4 py-2 bg-brand-bordeaux/80 hover:bg-brand-bordeaux text-white text-xs font-bold rounded-lg shadow transition"
@@ -515,7 +515,7 @@ export const RibbonBar: React.FC<RibbonBarProps> = ({
 
         {/* UTILITAIRES PANEL */}
         {activeTab === 'utilitaires' && (
-          <div className="flex items-center space-x-6 text-xs text-gray-300">
+          <div className="flex min-w-max items-center space-x-4 text-xs text-gray-300 sm:space-x-6">
             <div className="flex items-center space-x-1 hover:text-white cursor-pointer transition">
               <Settings size={14} />
               <span>Paramètres de l'Application</span>
