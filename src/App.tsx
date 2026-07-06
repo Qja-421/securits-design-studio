@@ -146,9 +146,9 @@ function App() {
             </button>
 
             {/* RIGHT SIDE: Properties + Power Balance */}
-            <div className={`${mobilePanel === 'properties' ? 'flex' : 'hidden'} ${rightPanelOpen ? 'md:flex' : 'md:hidden'} flex-1 flex-col overflow-hidden border-l border-white/10 md:w-52 md:flex-none md:shrink-0 lg:w-56`}>
+            <div className={`${mobilePanel === 'properties' ? 'flex' : 'hidden'} ${rightPanelOpen ? 'md:flex' : 'md:hidden'} flex-1 min-h-0 flex-col overflow-hidden border-l border-white/10 md:w-52 md:flex-none md:shrink-0 lg:w-56`}>
               {/* Properties Panel (upper) */}
-              <div className="flex-1 overflow-hidden p-2">
+              <div className="flex-1 min-h-0 overflow-hidden p-2">
                 <PropertiesPanel />
               </div>
               {/* Power Balance (lower, permanent) */}
