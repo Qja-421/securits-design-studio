@@ -1,3 +1,4 @@
+
 import React, { useRef } from 'react';
 import { Stage, Layer, Rect, Text, Group, Line, Circle } from 'react-konva';
 import { useProjectStore } from '../../store/projectStore';
@@ -37,7 +38,10 @@ export const CabinetCanvas: React.FC<CabinetCanvasProps> = ({
   const moduleWidthPx = 17.5 * scalePxPerMm;
   const dinRailHeight = 35 * scalePxPerMm;
   const componentHeight = 110;
-  const rowWiringGap = 75;
+  // NF C 15-100 + Legrand XL Pro guidelines: minimum ~125mm between DIN rail
+  // axes to leave room for cable routing (goulottes, peignes, gaines).
+  // 150px @ scalePxPerMm=2 = 75mm, which gives a realistic cabling channel.
+  const rowWiringGap = 150;
   const rowSpacing = componentHeight + rowWiringGap;
   const topOffset = 80;
   const paddingX = 55;
@@ -486,4 +490,3 @@ export const CabinetCanvas: React.FC<CabinetCanvasProps> = ({
     </div>
   );
 };
-
