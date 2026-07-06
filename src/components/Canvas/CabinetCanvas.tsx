@@ -27,6 +27,10 @@ export const CabinetCanvas: React.FC<CabinetCanvasProps> = ({
   const activeCabinet = cabinets.find((c) => c.id === activeCabinetId);
   const stageRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  // BUG FIX: After a drop, the browser can fire a synthetic click on the container,
+  // which would call selectComponent(null) and clear the freshly-set selection.
+  // This ref + small window prevents that race without breaking click-to-deselect.
+  const justDroppedRef = useRef(false);
 
   // Position parameters based on DIN proportions.
   const scalePxPerMm = 2;
@@ -66,6 +70,7 @@ export const CabinetCanvas: React.FC<CabinetCanvasProps> = ({
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation(); // Prevent the synthetic click that follows a drop from bubbling
     if (!activeCabinet || !stageRef.current) return;
 
     try {
@@ -95,13 +100,22 @@ export const CabinetCanvas: React.FC<CabinetCanvasProps> = ({
       const slot = Math.max(0, Math.round(relativeX / moduleWidthPx));
 
       // Trigger drop insert
-      addComponent(activeCabinetId, {
+      const ok = addComponent(activeCabinetId, {
         id: 'comp_' + Math.random().toString(36).substr(2, 9),
         type: dragData.type,
         widthModules: dragData.widthModules,
         rowIndex: closestRowIdx,
         properties: dragData.properties
       });
+
+      // Lock the click-to-deselect for a short window so the freshly-added
+      // component stays selected and its PropertiesPanel renders correctly.
+      if (ok) {
+        justDroppedRef.current = true;
+        window.setTimeout(() => {
+          justDroppedRef.current = false;
+        }, 150);
+      }
     } catch (err) {
       console.error("Drop handling failed", err);
     }
@@ -161,7 +175,10 @@ export const CabinetCanvas: React.FC<CabinetCanvasProps> = ({
           : 'bg-[#e5e7eb] bg-[radial-gradient(#d1d5db_1px,transparent_1px)] [background-size:16px_16px]'
       }`}
       style={{ touchAction: 'pan-x pan-y' }}
-      onClick={() => selectComponent(null)}
+      onClick={() => {
+        // Skip deselect right after a drop so the new component stays selected.
+        if (!justDroppedRef.current) selectComponent(null);
+      }}
     >
       {/* Visual Mode Label */}
       <div className="absolute top-3 left-3 bg-black/60 px-2.5 py-1 rounded text-[10px] text-gray-300 font-bold uppercase border border-white/10 z-10">
@@ -469,3 +486,4 @@ export const CabinetCanvas: React.FC<CabinetCanvasProps> = ({
     </div>
   );
 };
+
