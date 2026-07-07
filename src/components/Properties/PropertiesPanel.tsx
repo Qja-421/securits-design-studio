@@ -9,6 +9,7 @@ import {
   STANDARD_SECTIONS,
   POLE_OPTIONS
 } from '../../engine/norms';
+import { BRAND_LIST, BrandId, resolveBrand } from '../../types/brand';
 import { AlertTriangle, CheckCircle, Info, RefreshCw } from 'lucide-react';
 
 export const PropertiesPanel: React.FC = () => {
@@ -35,6 +36,7 @@ export const PropertiesPanel: React.FC = () => {
   }
 
   const props = selectedComponent.properties;
+  const componentBrand = resolveBrand(props.brand);
   const metrics = calculateComponentMetrics(selectedComponent);
   const cabinetViolations = activeCabinet ? validateCabinet(activeCabinet) : [];
   const compViolations = cabinetViolations.filter(
@@ -168,6 +170,34 @@ export const PropertiesPanel: React.FC = () => {
               onChange={handleFieldChange}
               className="bg-black/30 border border-white/10 rounded px-2.5 py-1.5 text-xs focus:outline-none focus:border-brand-blue"
             />
+          </div>
+
+          {/* 1b. Brand */}
+          <div className="flex flex-col">
+            <label className="text-[10px] text-gray-400 font-semibold mb-1 uppercase tracking-wider">
+              Marque / Fabricant
+            </label>
+            <div className="flex items-center space-x-1.5">
+              <span
+                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                style={{ backgroundColor: componentBrand.brandStripeColor }}
+              />
+              <select
+                name="brand"
+                value={props.brand || 'legrand'}
+                onChange={handleFieldChange}
+                className="flex-1 bg-black/30 border border-white/10 rounded px-2 py-1.5 text-xs focus:outline-none focus:border-brand-blue"
+              >
+                {BRAND_LIST.map((b) => (
+                  <option key={b.id} value={b.id} className="bg-brand-darkGray text-white">
+                    {b.fullName} ({b.country})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="text-[9px] text-gray-500 mt-1 font-mono">
+              Réf. produit : <span style={{ color: componentBrand.brandStripeColor }}>{componentBrand.referenceByType[selectedComponent.type]}</span>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">

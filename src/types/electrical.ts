@@ -5,6 +5,11 @@ export type ComponentType =
   | 'distribution'        // Peigne, bornier
   | 'load';               // Récepteur (Prise, Eclairage, Clim, etc.)
 
+// Re-export BrandId from the brand theme module so consumers can
+// import a single type namespace.
+export type { BrandId } from './brand';
+import type { BrandId } from './brand';
+
 export type ComponentPoles = '1P+N' | '2P' | '3P' | '4P';
 
 export type BreakerCurve = 'B' | 'C' | 'D';
@@ -31,6 +36,9 @@ export type LoadCategory =
 
 export interface ComponentProperties {
   name: string;
+  /** Manufacturer brand. Optional for backward compatibility —
+   *  readers should fall back to 'legrand' when undefined. */
+  brand?: BrandId;
   category?: LoadCategory;
   circuitUsage?: CircuitUsage;
   powerW?: number;

@@ -4,6 +4,7 @@ import { Stage, Layer, Rect, Text, Group, Line, Circle } from 'react-konva';
 import { useProjectStore } from '../../store/projectStore';
 import { ModularComponentNode } from './ModularComponentNode';
 import { CablingRenderer } from './CablingRenderer';
+import { resolveBrand } from '../../types/brand';
 
 interface CabinetCanvasProps {
   zoom: number;
@@ -250,6 +251,86 @@ export const CabinetCanvas: React.FC<CabinetCanvasProps> = ({
               />
             </Group>
           ))}
+
+          {/* ----------------------------------------------------
+              1b. BRAND HEADER BAND (top of enclosure)
+              Shows the dominant brand(s) used in the cabinet.
+              ---------------------------------------------------- */}
+          {(() => {
+            // Count components by brand, pick the dominant one
+            const brandCounts: Record<string, number> = {};
+            activeCabinet?.components.forEach((c) => {
+              const b = c.properties.brand || 'legrand';
+              brandCounts[b] = (brandCounts[b] || 0) + 1;
+            });
+            const dominantBrandId = Object.entries(brandCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'legrand';
+            const brand = resolveBrand(dominantBrandId);
+            const headerHeight = 28;
+            const headerY = 18;
+            return (
+              <Group listening={false}>
+                {/* Header background */}
+                <Rect
+                  x={20}
+                  y={headerY}
+                  width={cabinetWidth - 40}
+                  height={headerHeight}
+                  fill="#FFFFFF"
+                  stroke="#94A3B8"
+                  strokeWidth={0.6}
+                  cornerRadius={2}
+                />
+                {/* Brand stripe on the left */}
+                <Rect
+                  x={20}
+                  y={headerY}
+                  width={6}
+                  height={headerHeight}
+                  fill={brand.brandStripeColor}
+                />
+                {/* Brand name */}
+                <Text
+                  x={32}
+                  y={headerY + 4}
+                  text={brand.fullName}
+                  fontFamily="Inter, sans-serif"
+                  fontSize={10}
+                  fontStyle="bold"
+                  fill={brand.brandLabelColor}
+                />
+                <Text
+                  x={32}
+                  y={headerY + 16}
+                  text={brand.country}
+                  fontFamily="Inter, sans-serif"
+                  fontSize={7}
+                  fill="#64748B"
+                />
+                {/* Cabinet name on the right */}
+                <Text
+                  x={cabinetWidth - 22}
+                  y={headerY + 4}
+                  width={cabinetWidth - 50}
+                  text={activeCabinet?.name || 'Coffret'}
+                  fontFamily="Inter, sans-serif"
+                  fontSize={10}
+                  fontStyle="bold"
+                  fill="#0F172A"
+                  align="right"
+                />
+                <Text
+                  x={cabinetWidth - 22}
+                  y={headerY + 16}
+                  width={cabinetWidth - 50}
+                  text={`${activeCabinet?.rowsCount || 0} rangées · ${activeCabinet?.modulesPerRow || 0} modules`}
+                  fontFamily="Inter, sans-serif"
+                  fontSize={7}
+                  fill="#64748B"
+                  align="right"
+                />
+              </Group>
+            );
+          })()}
 
           {/* ----------------------------------------------------
               2. DIN RAILS & RACKS (Only in Atelier Mode)
