@@ -3,119 +3,132 @@ import { Group, Line, Rect, Circle, Path, Text } from 'react-konva';
 import { ElectricalComponent, Cabinet } from '../../types/electrical';
 import { resolveBrand } from '../../types/brand';
 
-// =========================================================================
-// Cable bundle label (e.g. "3G2.5mm²") — appears along each load wire
-// =========================================================================
-const CableLabel: React.FC<{
-  x: number;
-  y: number;
-  main: string;
-  sub: string;
-  paperBg?: string;
-  textColor?: string;
-}> = ({ x, y, main, sub, paperBg = '#FFFFFF', textColor = '#1F2937' }) => (
+// ────────────────────────────────────────────────────────────────────────────
+// Wire / cable colors (NF C 15-100 standard)
+//   Phase (mono) : brown #8B4513 / historically black
+//   Phase (tri)  : brown / black / grey
+//   Neutral      : light blue
+//   PE           : green / yellow striped
+// ────────────────────────────────────────────────────────────────────────────
+const WIRE = {
+  phaseMono: '#8B4513',
+  phaseTri:  '#1F2937',
+  neutral:   '#1D4ED8',
+  peYellow:  '#FACC15',
+  peGreen:   '#22C55E',
+  sheath:    '#1F2937'
+};
+
+/**
+ * Cable bundle label (printed sticker like "3G2.5mm² / 16A · 20m")
+ */
+const CableLabel: React.FC<{ x: number; y: number; main: string; sub: string }> = ({
+  x, y, main, sub
+}) => (
   <Group x={x} y={y} listening={false}>
     <Rect
-      x={-34}
-      y={-13}
-      width={68}
-      height={26}
-      fill={paperBg}
-      stroke="#475569"
-      strokeWidth={0.6}
+      x={-34} y={-13} width={68} height={26}
+      fill="#FFFFFF" stroke="#475569" strokeWidth={0.6}
       cornerRadius={2}
-      shadowColor="black"
-      shadowBlur={1.5}
-      shadowOpacity={0.15}
-      shadowOffset={{ x: 0, y: 0.5 }}
+      shadowColor="black" shadowBlur={1.5} shadowOpacity={0.15} shadowOffset={{ x: 0, y: 0.5 }}
     />
     <Text
-      x={-34}
-      y={-10.5}
-      width={68}
-      text={main}
-      fontSize={9}
-      fontStyle="bold"
-      fill={textColor}
-      align="center"
-      fontFamily="monospace"
+      x={-34} y={-10.5} width={68}
+      text={main} fontSize={9} fontStyle="bold" fill="#1F2937"
+      align="center" fontFamily="monospace"
     />
     <Text
-      x={-34}
-      y={2}
-      width={68}
-      text={sub}
-      fontSize={6.8}
-      fill="#64748B"
-      align="center"
-      fontFamily="monospace"
+      x={-34} y={2} width={68}
+      text={sub} fontSize={6.8} fill="#64748B"
+      align="center" fontFamily="monospace"
     />
   </Group>
 );
 
-// =========================================================================
-// Terminal designation tag (L1, N, PE, L1/L2/L3…) — conforms to single-
-// line schematic conventions used on Legrand/Hager terminal blocks.
-// =========================================================================
+/**
+ * Terminal designation tag (L1, N, PE, etc.)
+ */
 const TerminalTag: React.FC<{ x: number; y: number; text: string; tone?: 'phase' | 'neutral' | 'earth' }> = ({
-  x,
-  y,
-  text,
-  tone = 'phase'
+  x, y, text, tone = 'phase'
 }) => {
   const palette = {
-    phase: { fill: '#FFFFFF', stroke: '#1F2937', text: '#1F2937' },
-    neutral: { fill: '#FFFFFF', stroke: '#1E3A8A', text: '#1E3A8A' },
-    earth: { fill: '#FFFFFF', stroke: '#15803D', text: '#15803D' }
+    phase:   { fill: '#FFFFFF', stroke: '#1F2937', text: '#1F2937' },
+    neutral: { fill: '#FFFFFF', stroke: '#1E40AF', text: '#1E40AF' },
+    earth:   { fill: '#FFFFFF', stroke: '#166534', text: '#166534' }
   } as const;
   const p = palette[tone];
   return (
     <Group x={x} y={y} listening={false}>
       <Rect
-        x={-10}
-        y={-3.6}
-        width={20}
-        height={7.2}
-        fill={p.fill}
-        stroke={p.stroke}
-        strokeWidth={0.5}
+        x={-10} y={-3.6} width={20} height={7.2}
+        fill={p.fill} stroke={p.stroke} strokeWidth={0.5}
         cornerRadius={1.5}
       />
       <Text
-        x={-10}
-        y={-2.8}
-        width={20}
-        text={text}
-        fontSize={5}
-        fontStyle="bold"
-        fill={p.text}
-        align="center"
-        fontFamily="monospace"
+        x={-10} y={-2.8} width={20}
+        text={text} fontSize={5} fontStyle="bold" fill={p.text}
+        align="center" fontFamily="monospace"
       />
     </Group>
   );
 };
 
-// Helper: build the cable section label like "3G2.5mm²" or "5G6mm²"
-const getCableMain = (props: ElectricalComponent['properties']): string => {
-  const isTri = props.voltageV === 400;
-  const conductors = isTri ? (props.poles === '4P' ? 5 : 4) : 3;
-  return `${conductors}G${props.cableSectionMm2}mm²`;
-};
+/**
+ * Peigne (comb bus bar) — the long metal comb that all breakers in a row
+ * clip into at their bottom terminals. Drawn as a series of pin-heads
+ * on a horizontal bar — the iconic Hager / Legrand look.
+ */
+const Peigne: React.FC<{
+  x: number; y: number; width: number; color?: string; teethCount?: number;
+}> = ({ x, y, width, color = '#1F2937', teethCount = 13 }) => (
+  <Group listening={false}>
+    {/* Body bar */}
+    <Rect
+      x={x} y={y} width={width} height={5}
+      fillLinearGradientStartPoint={{ x: 0, y: y }}
+      fillLinearGradientEndPoint={{ x: 0, y: y + 5 }}
+      fillLinearGradientColorStops={[0, '#52525B', 0.4, '#A1A1AA', 1, '#27272A']}
+      stroke="#0F172A" strokeWidth={0.4}
+      cornerRadius={0.6}
+      shadowColor="black" shadowBlur={1.5} shadowOffset={{ x: 0, y: 1 }} shadowOpacity={0.4}
+    />
+    {/* Pin teeth — one per module slot */}
+    {Array.from({ length: teethCount }).map((_, i) => {
+      const tx = x + (width / teethCount) * (i + 0.5);
+      return (
+        <Group key={`peigne-tooth-${i}`}>
+          <Rect
+            x={tx - 1.2} y={y + 4} width={2.4} height={5}
+            fill="#71717A"
+            stroke="#27272A" strokeWidth={0.2}
+          />
+          {/* Pin head */}
+          <Circle
+            x={tx} y={y + 2.5} radius={1.3}
+            fillLinearGradientStartPoint={{ x: -1, y: -1 }}
+            fillLinearGradientEndPoint={{ x: 1, y: 1 }}
+            fillLinearGradientColorStops={[0, '#D4D4D8', 1, '#52525B']}
+            stroke="#0F172A" strokeWidth={0.2}
+          />
+        </Group>
+      );
+    })}
+  </Group>
+);
 
-// Helper: secondary line on cable label (calibre + longueur)
-const getCableSub = (props: ElectricalComponent['properties']): string =>
-  `${props.ratingA}A · ${props.cableLengthM}m`;
-
-// Helper: phase terminal designation (single phase → "L1", tri → "L1/L2/L3")
-const getPhaseTag = (props: ElectricalComponent['properties']): string => {
-  if (props.voltageV === 400) {
-    return props.poles === '4P' ? 'L1/L2/L3/N' : 'L1/L2/L3';
-  }
-  return 'L1';
-};
-
-interface CablingRendererProps {
+/**
+ * CablingRenderer — Atelier NF C 15-100 photo-realistic wiring
+ *
+ * Layers, in z-order:
+ *   1. Per-row peignes (comb bus bars)
+ *   2. Cable entry at top of enclosure
+ *   3. Per-component drop wires (phase + neutral from top terminals)
+ *   4. Per-load circuit (phase + neutral + earth to goulotte / earth bar)
+ *   5. Cable labels per load circuit
+ *   6. Earth bar (barre de terre laiton) at the bottom
+ *   7. Inter-row connections (gaines inter-rangées)
+ */
+export const CablingRenderer: React.FC<{
   cabinet: Cabinet;
   railYPositions: number[];
   railWidth: number;
@@ -123,411 +136,283 @@ interface CablingRendererProps {
   moduleWidthPx: number;
   componentHeight: number;
   presentationMode: boolean;
-}
-
-// Schematic wire colors — vibrant, high contrast, like a hand-drawn single-line diagram
-const SCHEMATIC_WIRE_COLORS = {
-  phase: '#E11D48',      // Crimson red (instead of the previous muddy brown)
-  phaseTri: '#1F2937',   // Near-black for tri-phase
-  neutral: '#2563EB',    // Vivid blue
-  earthYellow: '#FACC15',
-  earthGreen: '#22C55E',
-  sheath: '#1F2937'
-};
-
-export const CablingRenderer: React.FC<CablingRendererProps> = ({
-  cabinet,
-  railYPositions,
-  railWidth,
-  railX,
-  moduleWidthPx,
-  componentHeight,
-  presentationMode
+}> = ({
+  cabinet, railYPositions, railWidth, railX, moduleWidthPx, componentHeight, presentationMode
 }) => {
-  if (presentationMode) return null; // Hide wiring in closed-door presentation mode
-
+  if (presentationMode) return null;
   const components = cabinet.components;
+  const modulesPerRow = cabinet.modulesPerRow;
 
-  // Schematic layout offsets
-  const componentBottomY = (rY: number) => rY + componentHeight - 15;
-  const componentTopY = (rY: number) => rY + 15;
+  // Earth bar position — right under the last rail
+  const earthBarY = railYPositions[railYPositions.length - 1] + componentHeight + 60;
+  const peigneY = (rY: number) => rY + componentHeight + 6;
 
-  // Bus bars (peignes horizontaux) sit 6px above each component row
-  const busOffsetY = 6;
-  const busBarHeight = 5;
-
-  // Cable tray (goulotte) sits below the bus bar to collect drops
-  const cableTrayY = busOffsetY + busBarHeight + 4;
-  const cableTrayHeight = 18;
-
-  // Bottom of the entire wiring area (for vertical drops from the last row)
-  const earthBarY = railYPositions[railYPositions.length - 1] + componentHeight + 75;
+  // Helper: get cable section label
+  const getCableMain = (p: ElectricalComponent['properties']): string => {
+    const isTri = p.voltageV === 400;
+    const conductors = isTri ? (p.poles === '4P' ? 5 : 4) : 3;
+    return `${conductors}G${p.cableSectionMm2}mm²`;
+  };
+  const getCableSub = (p: ElectricalComponent['properties']): string =>
+    `${p.ratingA}A · ${p.cableLengthM}m`;
+  const getPhaseTag = (p: ElectricalComponent['properties']): string => {
+    if (p.voltageV === 400) return p.poles === '4P' ? 'L1/L2/L3/N' : 'L1/L2/L3';
+    return 'L1';
+  };
 
   return (
     <Group>
-      {/* ============================================================
-          0. SCHEMATIC BACKGROUND (only behind the wiring area)
-          ============================================================ */}
-      {railYPositions.map((rY, rowIndex) => (
+      {/* ════════════════════════════════════════════════════════════════
+          0. CABLE ENTRY — top of enclosure, where wires come in
+          Renders as a grommet strip with thick wire bundle descending
+          ════════════════════════════════════════════════════════════════ */}
+      <Group listening={false}>
+        {/* Entry grommet */}
         <Rect
-          key={`schematic-bg-${rowIndex}`}
-          x={railX - 30}
-          y={rY - 8}
-          width={railWidth + 60}
-          height={componentHeight + 90}
-          fill="#FAFAF7"
-          stroke="#CBD5E1"
-          strokeWidth={0.5}
-          cornerRadius={2}
-          listening={false}
+          x={railX - 10} y={28}
+          width={railWidth + 20} height={6}
+          fill="#1F2937"
+          cornerRadius={1}
         />
-      ))}
+        {/* Wire bundle descending into the cabinet (visualised as a thick gray sheath) */}
+        {(() => {
+          const entryY = 34;
+          const midX = railX + railWidth / 2;
+          return (
+            <Group>
+              {/* Phase sheaths */}
+              <Path
+                data={`M ${railX + 30} ${entryY} L ${railX + 30} ${railYPositions[0] - 5}`}
+                stroke={WIRE.sheath} strokeWidth={7} lineCap="round" opacity={0.85}
+              />
+              <Path
+                data={`M ${railX + 30} ${entryY} L ${railX + 30} ${railYPositions[0] - 5}`}
+                stroke={WIRE.phaseMono} strokeWidth={5} lineCap="round"
+              />
+              {/* Neutral sheath */}
+              <Path
+                data={`M ${railX + railWidth - 30} ${entryY} L ${railX + railWidth - 30} ${railYPositions[0] - 5}`}
+                stroke={WIRE.sheath} strokeWidth={6} lineCap="round" opacity={0.85}
+              />
+              <Path
+                data={`M ${railX + railWidth - 30} ${entryY} L ${railX + railWidth - 30} ${railYPositions[0] - 5}`}
+                stroke={WIRE.neutral} strokeWidth={4} lineCap="round"
+              />
+              {/* PE sheath */}
+              <Path
+                data={`M ${midX} ${entryY} L ${midX} ${earthBarY - 5}`}
+                stroke={WIRE.sheath} strokeWidth={5} lineCap="round" opacity={0.85}
+              />
+              <Path
+                data={`M ${midX} ${entryY} L ${midX} ${earthBarY - 5}`}
+                stroke={WIRE.peYellow} strokeWidth={3} lineCap="round"
+              />
+              <Path
+                data={`M ${midX} ${entryY} L ${midX} ${earthBarY - 5}`}
+                stroke={WIRE.peGreen} strokeWidth={2.4} lineCap="round" dash={[5, 3]}
+              />
+            </Group>
+          );
+        })()}
+      </Group>
 
-      {/* ============================================================
-          1. HORIZONTAL BUS BARS (Peignes Phase + Neutre par rangée)
-          ============================================================ */}
+      {/* ════════════════════════════════════════════════════════════════
+          1. PEIGNES — comb bus bar at the bottom of each row
+          ════════════════════════════════════════════════════════════════ */}
       {railYPositions.map((rY, rowIndex) => {
         const rowComponents = components.filter((c) => c.rowIndex === rowIndex);
         if (rowComponents.length === 0) return null;
-        const minX = railX + 4;
-        const maxX = railX + railWidth - 4;
-
         return (
-          <Group key={`bus-bars-${rowIndex}`} listening={false}>
-            {/* Phase bus (red) */}
-            <Rect
-              x={minX}
-              y={rY - busOffsetY - busBarHeight}
-              width={maxX - minX}
-              height={busBarHeight}
-              fill={SCHEMATIC_WIRE_COLORS.phase}
-              stroke="#1F2937"
-              strokeWidth={0.4}
-              cornerRadius={1}
-            />
-            {/* Neutral bus (blue) — just under the phase bus */}
-            <Rect
-              x={minX}
-              y={rY - busOffsetY + 1}
-              width={maxX - minX}
-              height={busBarHeight}
-              fill={SCHEMATIC_WIRE_COLORS.neutral}
-              stroke="#1E3A8A"
-              strokeWidth={0.4}
-              cornerRadius={1}
-            />
-            {/* Bus identification label (top-left of the row) */}
-            <Text
-              x={railX - 28}
-              y={rY - busOffsetY - busBarHeight - 2}
-              text={`R${rowIndex + 1}`}
-              fontSize={6.5}
-              fontStyle="bold"
-              fill="#475569"
-              fontFamily="monospace"
-            />
-          </Group>
+          <Peigne
+            key={`peigne-${rowIndex}`}
+            x={railX}
+            y={peigneY(rY)}
+            width={railWidth}
+            teethCount={modulesPerRow}
+          />
         );
       })}
 
-      {/* ============================================================
-          2. PER-COMPONENT SHORT DROPS (Phase + Neutre vers chaque module)
-          ============================================================ */}
+      {/* ════════════════════════════════════════════════════════════════
+          2. PER-COMPONENT DROP WIRES — top terminal to bus bar / peigne
+          (phase + neutral curves from top to bottom of component)
+          ════════════════════════════════════════════════════════════════ */}
       {components.map((c) => {
-        if (c.type === 'load') return null; // Loads handled separately
+        if (c.type === 'load') return null;
         const rY = railYPositions[c.rowIndex];
-        const topX = railX + (c.moduleIndex + c.widthModules / 2) * moduleWidthPx;
+        const xMid = railX + (c.moduleIndex + c.widthModules / 2) * moduleWidthPx;
         const isTri = c.properties.voltageV === 400;
-        const phaseColor = isTri ? SCHEMATIC_WIRE_COLORS.phaseTri : SCHEMATIC_WIRE_COLORS.phase;
+        const phaseColor = isTri ? WIRE.phaseTri : WIRE.phaseMono;
         const phaseTag = getPhaseTag(c.properties);
+
         return (
           <Group key={`drop-${c.id}`} listening={false}>
-            <Line
-              points={[topX, rY - busOffsetY - 1, topX, rY + 15]}
-              stroke={phaseColor}
-              strokeWidth={2.4}
-              lineCap="round"
+            {/* Phase wire — from top terminal down to peigne */}
+            <Path
+              data={`M ${xMid + 3} ${rY + 13} L ${xMid + 3} ${peigneY(rY) + 2.5}`}
+              stroke={phaseColor} strokeWidth={2.2} lineCap="round"
             />
-            <Line
-              points={[topX - 3, rY - busOffsetY + 3, topX - 3, rY + 15]}
-              stroke={SCHEMATIC_WIRE_COLORS.neutral}
-              strokeWidth={2.4}
-              lineCap="round"
+            {/* Neutral wire */}
+            <Path
+              data={`M ${xMid - 3} ${rY + 13} L ${xMid - 3} ${peigneY(rY) + 2.5}`}
+              stroke={WIRE.neutral} strokeWidth={2.2} lineCap="round"
             />
-            <TerminalTag x={topX + 7} y={rY - 2} text={phaseTag} tone="phase" />
-            <TerminalTag x={topX - 7} y={rY - 2} text="N" tone="neutral" />
+            <TerminalTag x={xMid + 8} y={rY + 14} text={phaseTag} tone="phase" />
+            <TerminalTag x={xMid - 8} y={rY + 14} text="N" tone="neutral" />
           </Group>
         );
       })}
 
-      {/* ============================================================
-          3. LOAD CIRCUITS (Phase + Neutre + Terre vers chaque récepteur)
-          Each load shows: terminal number (1..6), cable section label,
-          circuit name (under the breaker), and the route to the earth bar.
-          ============================================================ */}
+      {/* ════════════════════════════════════════════════════════════════
+          3. LOAD CIRCUITS — wires from peigne bottom to goulotte + earth bar
+          Each load shows: phase + neutral descending, earth wire to earth bar,
+          cable section label and circuit name.
+          ════════════════════════════════════════════════════════════════ */}
       {components.map((c, idx) => {
         if (c.type !== 'load') return null;
-
         const rY = railYPositions[c.rowIndex];
         const colX = railX + c.moduleIndex * moduleWidthPx;
         const width = c.widthModules * moduleWidthPx;
-        const topX = colX + width / 2;
-        const topY = componentTopY(rY);
-        const bottomY = componentBottomY(rY);
+        const xMid = colX + width / 2;
+        const topY = rY + 13;
+        const peigneBottom = peigneY(rY) + 9;
+        const goulotteTop = peigneBottom + 4;
+        const goulotteHeight = 14;
         const props = c.properties;
         const isTri = props.voltageV === 400;
-        const phaseColor = isTri ? SCHEMATIC_WIRE_COLORS.phaseTri : SCHEMATIC_WIRE_COLORS.phase;
+        const phaseColor = isTri ? WIRE.phaseTri : WIRE.phaseMono;
 
-        // Terminal numbers (1, 2, 3, 4, 5, 6) above the breaker
-        const terminalNumbers = isTri
-          ? (props.poles === '4P' ? ['1', '2', '3', 'N'] : ['1', '2', '3'])
-          : ['1', '2', '3'];
-
-        // Compute position for the cable label and circuit name
-        const labelX = colX + width / 2;
-        const labelY = bottomY + 24;
-        const circuitNameY = bottomY + 56;
+        // Wires go: from top terminal down through the breaker to peigne,
+        // then bend sideways into the goulotte, run to the side of the row,
+        // then drop down to the earth bar (for PE only).
+        const sideX = c.moduleIndex % 2 === 0 ? colX + width + 12 : colX - 12;
+        const earthLandingX = Math.max(railX + 4, Math.min(railX + railWidth - 4, sideX));
 
         return (
           <Group key={`load-${c.id}`} listening={false}>
-            {/* 3A. Drop from bus bars to breaker top */}
-            <Line
-              points={[topX, rY - busOffsetY - 1, topX, topY]}
-              stroke={phaseColor}
-              strokeWidth={2.4}
-              lineCap="round"
+            {/* Goulotte (cable tray) horizontal segment under the row */}
+            <Rect
+              x={railX - 8} y={goulotteTop}
+              width={railWidth + 16} height={goulotteHeight}
+              fillLinearGradientStartPoint={{ x: 0, y: goulotteTop }}
+              fillLinearGradientEndPoint={{ x: 0, y: goulotteTop + goulotteHeight }}
+              fillLinearGradientColorStops={[0, '#E5E7EB', 0.5, '#F3F4F6', 1, '#9CA3AF']}
+              stroke="#4B5563" strokeWidth={0.6}
+              cornerRadius={1.5}
+              shadowColor="black" shadowBlur={1.5} shadowOffset={{ x: 0, y: 1 }} shadowOpacity={0.35}
             />
-            <Line
-              points={[topX - 4, rY - busOffsetY + 3, topX - 4, topY]}
-              stroke={SCHEMATIC_WIRE_COLORS.neutral}
-              strokeWidth={2.4}
-              lineCap="round"
-            />
-
-            {/* 3B. Phase + neutral exiting the breaker bottom */}
-            <Line
-              points={[topX, bottomY, topX, bottomY + 14]}
-              stroke={phaseColor}
-              strokeWidth={2.4}
-              lineCap="round"
-            />
-            <Line
-              points={[topX - 4, bottomY, topX - 4, bottomY + 14]}
-              stroke={SCHEMATIC_WIRE_COLORS.neutral}
-              strokeWidth={2.4}
-              lineCap="round"
+            {/* Slot opening */}
+            <Rect
+              x={railX - 4} y={goulotteTop + goulotteHeight / 2 - 1.5}
+              width={railWidth + 8} height={3}
+              fill="#0F172A"
+              cornerRadius={0.6}
             />
 
-            {/* 3C. Earth wire to the earth bar */}
+            {/* Phase wire: top terminal -> peigne -> out the goulotte */}
             <Path
-              data={`M ${topX + 4} ${bottomY} L ${topX + 4} ${bottomY + 14} C ${topX + 4} ${bottomY + 30}, ${railX - 8} ${bottomY + 40}, ${railX - 8} ${earthBarY - 5}`}
-              stroke={SCHEMATIC_WIRE_COLORS.earthYellow}
-              strokeWidth={2.2}
-              lineCap="round"
-              dash={[5, 3]}
+              data={`M ${xMid} ${topY} L ${xMid} ${peigneBottom} L ${xMid} ${goulotteTop + 2}`}
+              stroke={phaseColor} strokeWidth={2.2} lineCap="round"
+            />
+            {/* Neutral wire */}
+            <Path
+              data={`M ${xMid - 4} ${topY} L ${xMid - 4} ${peigneBottom} L ${xMid - 4} ${goulotteTop + 2}`}
+              stroke={WIRE.neutral} strokeWidth={2.2} lineCap="round"
+            />
+
+            {/* Earth wire: peigne -> goulotte -> drop to earth bar */}
+            <Path
+              data={`M ${xMid + 4} ${peigneBottom} L ${xMid + 4} ${goulotteTop + 2}
+                       L ${earthLandingX} ${goulotteTop + 2}
+                       L ${earthLandingX} ${earthBarY - 5}`}
+              stroke={WIRE.peYellow} strokeWidth={2} lineCap="round"
             />
             <Path
-              data={`M ${topX + 4} ${bottomY} L ${topX + 4} ${bottomY + 14} C ${topX + 4} ${bottomY + 30}, ${railX - 8} ${bottomY + 40}, ${railX - 8} ${earthBarY - 5}`}
-              stroke={SCHEMATIC_WIRE_COLORS.earthGreen}
-              strokeWidth={1.4}
-              lineCap="round"
-              dash={[5, 3]}
-              opacity={0.9}
+              data={`M ${xMid + 4} ${peigneBottom} L ${xMid + 4} ${goulotteTop + 2}
+                       L ${earthLandingX} ${goulotteTop + 2}
+                       L ${earthLandingX} ${earthBarY - 5}`}
+              stroke={WIRE.peGreen} strokeWidth={1.4} lineCap="round" dash={[5, 3]}
             />
 
-            {/* 3D. Terminal numbers (1..6) above the breaker */}
-            {terminalNumbers.map((tn, tIdx) => {
-              const spacing = Math.min(6, width / (terminalNumbers.length + 1));
-              const tx = colX + spacing * (tIdx + 1);
-              return (
-                <Group key={`tn-${c.id}-${tIdx}`}>
-                  <Text
-                    x={tx - 4}
-                    y={rY - busOffsetY - 14}
-                    width={8}
-                    text={tn}
-                    fontSize={6}
-                    fontStyle="bold"
-                    fill="#1F2937"
-                    align="center"
-                    fontFamily="monospace"
-                  />
-                </Group>
-              );
-            })}
-
-            {/* 3E. Terminal designation tags on the breaker bottom */}
-            <TerminalTag x={topX + 7} y={bottomY + 2} text={getPhaseTag(props)} tone="phase" />
-            <TerminalTag x={topX - 7} y={bottomY + 2} text="N" tone="neutral" />
-            <TerminalTag x={topX + 4} y={bottomY + 2} text="PE" tone="earth" />
-
-            {/* 3F. Cable section label (e.g. "3G2.5mm² / 16A · 20m") */}
+            {/* Cable label and circuit name positioned above the goulotte */}
             <CableLabel
-              x={labelX}
-              y={labelY}
+              x={xMid} y={goulotteTop - 14}
               main={getCableMain(props)}
               sub={getCableSub(props)}
             />
 
-            {/* 3G. Circuit name below the breaker — readable single-line label */}
+            {/* Circuit-name sticker below the goulotte */}
             <Group>
               <Rect
-                x={colX}
-                y={circuitNameY - 4}
-                width={width}
-                height={20}
-                fill="#FFFFFF"
-                stroke="#94A3B8"
-                strokeWidth={0.5}
-                cornerRadius={1.5}
+                x={colX} y={goulotteTop + goulotteHeight + 4}
+                width={width} height={16}
+                fill="#FFFFFF" stroke="#94A3B8" strokeWidth={0.5}
+                cornerRadius={1}
               />
               <Text
-                x={colX + 2}
-                y={circuitNameY + 2}
+                x={colX + 2} y={goulotteTop + goulotteHeight + 9}
                 width={width - 4}
                 text={props.name || 'Circuit'}
-                fontSize={7.5}
-                fontStyle="bold"
-                fill="#0F172A"
-                align="center"
+                fontSize={6.5} fontStyle="bold" fill="#0F172A"
+                align="center" ellipsis wrap="none"
                 fontFamily="Inter, sans-serif"
-                ellipsis
-                wrap="none"
               />
             </Group>
           </Group>
         );
       })}
 
-      {/* ============================================================
-          4. EARTH BAR (Barre de terre) at the bottom of the cabinet
-          ============================================================ */}
-      <Group x={railX - 8} y={earthBarY} listening={false}>
+      {/* ════════════════════════════════════════════════════════════════
+          4. EARTH BAR — Brass terminal bar at the bottom (laiton)
+          ════════════════════════════════════════════════════════════════ */}
+      <Group listening={false}>
+        {/* Mounting brackets */}
+        <Rect x={railX + 10} y={earthBarY - 4} width={6} height={14} fill="#52525B" cornerRadius={0.6} />
+        <Rect x={railX + railWidth - 16} y={earthBarY - 4} width={6} height={14} fill="#52525B" cornerRadius={0.6} />
+        {/* Brass bar body */}
         <Rect
-          x={0}
-          y={0}
-          width={railWidth + 16}
-          height={10}
-          fill="#FACC15"
-          stroke="#854D0E"
-          strokeWidth={0.8}
-          cornerRadius={1}
-          shadowColor="black"
-          shadowBlur={2}
-          shadowOpacity={0.18}
-          shadowOffset={{ x: 0, y: 1 }}
+          x={railX + 18} y={earthBarY}
+          width={railWidth - 36} height={10}
+          fillLinearGradientStartPoint={{ x: 0, y: earthBarY }}
+          fillLinearGradientEndPoint={{ x: 0, y: earthBarY + 10 }}
+          fillLinearGradientColorStops={[0, '#FDE047', 0.5, '#EAB308', 1, '#A16207']}
+          stroke="#854D0E" strokeWidth={0.8}
+          cornerRadius={1.2}
+          shadowColor="black" shadowBlur={2} shadowOffset={{ x: 0, y: 1 }} shadowOpacity={0.3}
         />
+        {/* Yellow/green striped overlay */}
         <Rect
-          x={0}
-          y={0}
-          width={railWidth + 16}
-          height={10}
-          fill="#22C55E"
-          opacity={0.4}
-          dash={[4, 3]}
+          x={railX + 18} y={earthBarY}
+          width={railWidth - 36} height={10}
+          fill="#22C55E" opacity={0.35} dash={[4, 3]}
         />
-        {/* Terminal blocks (small dots) */}
-        {Array.from({ length: Math.floor((railWidth + 16) / 14) }).map((_, i) => {
-          const cx = 7 + i * 14;
+        {/* Terminal blocks */}
+        {Array.from({ length: Math.max(4, Math.floor((railWidth - 36) / 18)) }).map((_, i) => {
+          const cx = railX + 24 + i * 18;
           return (
-            <Group key={`es-${i}`}>
-              <Rect x={cx - 3} y={2} width={6} height={6} fill="#0F172A" stroke="#000" strokeWidth={0.4} cornerRadius={0.6} />
-              <Circle x={cx} y={5} radius={1.2} fill="#1F2937" />
+            <Group key={`earth-tb-${i}`}>
+              <Rect x={cx - 3} y={earthBarY + 1} width={6} height={8}
+                fill="#0F172A" stroke="#000" strokeWidth={0.3} cornerRadius={0.6}
+              />
+              <Circle x={cx} y={earthBarY + 5} radius={1.6}
+                fillLinearGradientStartPoint={{ x: -1, y: -1 }}
+                fillLinearGradientEndPoint={{ x: 1, y: 1 }}
+                fillLinearGradientColorStops={[0, '#52525B', 1, '#0F172A']}
+                stroke="#000" strokeWidth={0.2}
+              />
+              <Line points={[cx - 1.2, earthBarY + 5, cx + 1.2, earthBarY + 5]} stroke="#FBBF24" strokeWidth={0.4} />
+              <Line points={[cx, earthBarY + 3.8, cx, earthBarY + 6.2]} stroke="#FBBF24" strokeWidth={0.4} />
             </Group>
           );
         })}
+        {/* Label */}
         <Text
-          x={0}
-          y={-9}
+          x={railX + 22} y={earthBarY - 11}
           text="BARRE DE TERRE (PE)"
-          fontSize={6.5}
-          fontStyle="bold"
-          fill="#15803D"
+          fontSize={7} fontStyle="bold" fill="#166534"
           fontFamily="monospace"
         />
       </Group>
-
-      {/* ============================================================
-          5. INTER-ROW CONNECTIONS (Gaines inter-rangées)
-          ============================================================ */}
-      {(() => {
-        if (railYPositions.length <= 1) return null;
-        return railYPositions
-          .map((_, rowIndex) => ({ rowIndex }))
-          .filter(({ rowIndex }) => rowIndex > 0)
-          .map(({ rowIndex }) => {
-            const previousY = railYPositions[rowIndex - 1] + componentHeight + 20;
-            const currentY = railYPositions[rowIndex] - busOffsetY;
-            const sheathX = railX - 22;
-            const path = `M ${sheathX} ${previousY} L ${sheathX} ${currentY}`;
-            return (
-              <Group key={`inter-row-${rowIndex}`} listening={false}>
-                <Path
-                  data={path}
-                  stroke={SCHEMATIC_WIRE_COLORS.sheath}
-                  strokeWidth={6}
-                  lineCap="round"
-                  opacity={0.85}
-                />
-                <Path
-                  data={path}
-                  stroke="#94A3B8"
-                  strokeWidth={3.5}
-                  lineCap="round"
-                />
-                {/* Phase + neutral wires inside the sheath */}
-                <Line
-                  points={[sheathX, previousY, sheathX, currentY]}
-                  stroke={SCHEMATIC_WIRE_COLORS.phase}
-                  strokeWidth={1.6}
-                  lineCap="round"
-                />
-                <Line
-                  points={[sheathX - 1.5, previousY, sheathX - 1.5, currentY]}
-                  stroke={SCHEMATIC_WIRE_COLORS.neutral}
-                  strokeWidth={1.6}
-                  lineCap="round"
-                />
-                <Text
-                  x={sheathX - 5}
-                  y={(previousY + currentY) / 2 - 3}
-                  text={`R${rowIndex}`}
-                  fontSize={6}
-                  fontStyle="bold"
-                  fill="#475569"
-                  fontFamily="monospace"
-                />
-              </Group>
-            );
-          });
-      })()}
-
-      {/* ============================================================
-          6. PER-COMPONENT TERMINAL NUMBERS (1-6 strip above each row)
-          Mimics the schematic reference number strip from image 1.
-          ============================================================ */}
-      {railYPositions.map((rY, rowIndex) => {
-        const rowComponents = components.filter((c) => c.rowIndex === rowIndex);
-        if (rowComponents.length === 0) return null;
-        const numSlots = cabinet.modulesPerRow;
-        const ticks = Array.from({ length: numSlots + 1 });
-        return (
-          <Group key={`term-strip-${rowIndex}`} listening={false}>
-            {ticks.map((_, tickIdx) => {
-              const x = railX + tickIdx * moduleWidthPx;
-              return (
-                <React.Fragment key={`t-${tickIdx}`}>
-                  <Line
-                    points={[x, rY - busOffsetY - 8, x, rY - busOffsetY - 4]}
-                    stroke="#94A3B8"
-                    strokeWidth={0.4}
-                  />
-                </React.Fragment>
-              );
-            })}
-          </Group>
-        );
-      })}
     </Group>
   );
 };
