@@ -484,6 +484,74 @@ export const CabinetCanvas: React.FC<CabinetCanvasProps> = ({
           })}
 
           {/* ════════════════════════════════════════════════════════════════
+              7b. ROW LABEL STRIPS — printed plastic covers above each rail
+              Like the "Sécurité / Tableau / Cuisine / Lave-linge" stickers
+              in real Legrand/Hager distribution boards. Safety circuits
+              (Cuisine, LL, Eau chaude, Sécurité) are highlighted in red.
+              ════════════════════════════════════════════════════════════════ */}
+          {!presentationMode && railYPositions.map((y, rowIndex) => {
+            const rowComponents = activeCabinet?.components.filter((c) => c.rowIndex === rowIndex) || [];
+            const SAFETY_KEYWORDS = /sécurité|securite|safety|cuisine|lave-linge|lave linge|chauffe|eau chaude|four|plaque/i;
+            return (
+              <Group key={`row-labels-${rowIndex}`} listening={false}>
+                {rowComponents.map((comp) => {
+                  const colX = railX + comp.moduleIndex * moduleWidthPx;
+                  const w = comp.widthModules * moduleWidthPx;
+                  const labelY = y - 18; // strip sits above the component (in the wiring channel)
+                  const isSafety = SAFETY_KEYWORDS.test(comp.properties.name || '');
+                  const fillColor = isSafety ? '#B91C1C' : '#FFFFFF';
+                  const textColor = isSafety ? '#FFFFFF' : '#0F172A';
+                  return (
+                    <React.Fragment key={`rl-${comp.id}`}>
+                      {/* Label strip background */}
+                      <Rect
+                        x={colX + 1} y={labelY}
+                        width={w - 2} height={14}
+                        fill={fillColor}
+                        stroke={isSafety ? '#7F1D1D' : '#94A3B8'}
+                        strokeWidth={0.5}
+                        cornerRadius={1.2}
+                        shadowColor="black" shadowBlur={1} shadowOffset={{ x: 0, y: 0.5 }} shadowOpacity={0.25}
+                      />
+                      {/* Small triangle notch on top-left for plastic-card look */}
+                      <Line
+                        points={[colX + 2, labelY, colX + 6, labelY - 2]}
+                        stroke={isSafety ? '#7F1D1D' : '#94A3B8'} strokeWidth={0.4}
+                      />
+                      {/* Printed label text */}
+                      <Text
+                        x={colX + 2} y={labelY + 2.5}
+                        width={w - 4}
+                        text={comp.properties.name || '—'}
+                        fontSize={6.5}
+                        fontStyle="bold"
+                        fill={textColor}
+                        align="center" ellipsis wrap="none"
+                        fontFamily="Inter, sans-serif"
+                      />
+                    </React.Fragment>
+                  );
+                })}
+                {/* Row index badge on the far left (R1, R2, R3, R4) */}
+                <Rect
+                  x={railX - 32} y={y - 14}
+                  width={22} height={12}
+                  fill="#1F2937"
+                  cornerRadius={1.5}
+                  shadowColor="black" shadowBlur={1} shadowOpacity={0.4}
+                />
+                <Text
+                  x={railX - 32} y={y - 11}
+                  width={22}
+                  text={`R${rowIndex + 1}`}
+                  fontSize={7} fontStyle="bold" fill="#FACC15"
+                  align="center" fontFamily="monospace"
+                />
+              </Group>
+            );
+          })}
+
+          {/* ════════════════════════════════════════════════════════════════
               8. PRESENTATION MODE — white façade with circuit-name strips
               ════════════════════════════════════════════════════════════════ */}
           {presentationMode && activeCabinet && (
