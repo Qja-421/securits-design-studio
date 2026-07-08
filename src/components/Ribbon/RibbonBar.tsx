@@ -479,11 +479,11 @@ export const RibbonBar: React.FC<RibbonBarProps> = ({
         <div className="flex min-w-max items-center space-x-3">
           <button
             onClick={onExportPDF}
-            title="Dossier Technique complet : couverture, synthèse exécutive, analyse des puissances, détail par coffret avec schémas, conformité NF C 15-100, recommandations, signatures."
+            title="Dossier Client complet en 2 parties : Partie 1 Dossier de Conviction (présentation, engagements, méthodologie, synthèse) + Partie 2 Dossier Technique (NF C 15-100, calculs, conformité, schémas, signatures)."
             className="flex items-center space-x-2 px-4 py-2 bg-brand-bordeaux/80 hover:bg-brand-bordeaux text-white text-xs font-bold rounded-lg shadow transition"
           >
             <FileText size={16} />
-            <span>Dossier Technique PDF</span>
+            <span>Dossier Client PDF</span>
           </button>
 
           <button

@@ -337,7 +337,406 @@ export const exportToPDF = (cabinets: Cabinet[], details: ProjectDetails, option
     }),
 
     content: [
-      // ════════════ PAGE 1 : COUVERTURE ════════════
+      // ═══════════════════════════════════════════════════════════════════
+      //  PARTIE 1 — DOSSIER DE CONVICTION CLIENT
+      //  Pages commerciales qui présentent Securits Tech et démontrent
+      //  pourquoi ce dossier doit être validé par le client.
+      // ═══════════════════════════════════════════════════════════════════
+
+      // ───── PAGE 1.1 — Couverture commerciale ─────
+      { text: '', margin: [0, 30, 0, 0] },
+      {
+        columns: [
+          {
+            width: '*',
+            stack: [
+              { text: 'SECURITS TECH', style: 'coverBrand' },
+              { text: 'Bureau d\'études électriques — Pointe-Noire, Congo', style: 'coverSub' },
+              { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 200, y2: 8, lineWidth: 2, lineColor: '#F7941D' }] }
+            ]
+          }
+        ]
+      },
+      { text: '', margin: [0, 80, 0, 0] },
+      { text: 'DOSSIER CLIENT', style: 'coverTitle' },
+      { text: 'POUR VALIDATION', style: 'coverTitle' },
+      { text: 'Partie 1 — Conviction · Partie 2 — Technique', style: 'coverTitleSub' },
+      { text: '', margin: [0, 30, 0, 0] },
+      {
+        columns: [
+          { width: '*', text: '' },
+          {
+            width: 'auto',
+            table: {
+              widths: ['auto', 12, 'auto'],
+              body: [
+                ['Projet', ':', details.name],
+                ['Client', ':', details.clientName],
+                ['Adresse', ':', details.clientAddress],
+                ['Date', ':', details.date],
+                ['Auteur', ':', details.author],
+                ['Référence', ':', referenceId]
+              ].map((row) => [
+                { text: row[0], bold: true, color: '#1E3A8A', fontSize: 11 },
+                { text: row[1], fontSize: 11, color: '#94A3B8', alignment: 'center' },
+                { text: row[2], fontSize: 11, color: '#0F172A' }
+              ])
+            },
+            layout: 'noBorders'
+          }
+        ]
+      },
+      { text: '', margin: [0, 60, 0, 0] },
+      {
+        table: {
+          widths: ['100%'],
+          body: [[
+            {
+              stack: [
+                { text: 'POURQUOI CE DOCUMENT EST ESSENTIEL', bold: true, color: '#8B1E3F', fontSize: 10 },
+                { text: 'Ce dossier vous est remis pour valider, en toute connaissance de cause, le projet d\'installation électrique de votre bâtiment. Il est structuré en deux parties complémentaires :', fontSize: 9, color: '#475569', margin: [0, 4, 0, 0] },
+                { text: '• Partie 1 — Dossier de conviction : qui nous sommes, nos engagements et la lecture managériale du projet', fontSize: 9, color: '#1F2937', margin: [0, 6, 0, 0] },
+                { text: '• Partie 2 — Dossier technique : calculs NF C 15-100, schémas unifilaires, conformité, signatures', fontSize: 9, color: '#1F2937', margin: [0, 2, 0, 0] },
+                { text: 'La signature de la Partie 2 vaut acceptation technique. La présente Partie 1 vous donne les clés pour décider en confiance.', fontSize: 8.5, color: '#64748B', italics: true, margin: [0, 6, 0, 0] }
+              ],
+              fillColor: '#FFF7ED',
+              margin: [10, 10, 10, 10]
+            }
+          ]]
+        },
+        layout: 'noBorders'
+      },
+      { text: '', pageBreak: 'after' },
+
+      // ───── PAGE 1.2 — Securits Tech : qui sommes-nous ─────
+      { text: 'SECURITS TECHNOLOGIES', style: 'h1', color: '#1E3A8A' },
+      { text: 'Bureau d\'études indépendant · Pointe-Noire, République du Congo', style: 'h2', color: '#F7941D' },
+      { text: '', margin: [0, 6, 0, 0] },
+      {
+        text: 'Securits Technologies est un bureau d\'études techniques spécialisé en conception d\'installations électriques basse tension pour le bâtiment. Nous accompagnons promoteurs, architectes, entreprises générales et particuliers exigeants à Pointe-Noire et sur l\'ensemble du territoire congolais. Notre mission : garantir à chaque client une installation sûre, conforme et pérenne, optimisée pour son usage réel.',
+        fontSize: 10, color: '#1F2937', lineHeight: 1.3
+      },
+      { text: '', margin: [0, 12, 0, 0] },
+      {
+        table: {
+          widths: ['*', '*'],
+          body: [
+            [
+              {
+                stack: [
+                  { text: '◼  Expertises', bold: true, color: '#1E3A8A', fontSize: 10 },
+                  { text: '', margin: [0, 4, 0, 0] },
+                  { text: '•  Conception de tableaux électriques NF C 15-100', fontSize: 9 },
+                  { text: '•  Notes de calcul & schémas unifilaires', fontSize: 9 },
+                  { text: '•  Calucls de chutes de tension et courts-circuits', fontSize: 9 },
+                  { text: '•  Études d\'éclairement et schémas architecturaux', fontSize: 9 },
+                  { text: '•  Coordination des protections (sélectivité, filiation)', fontSize: 9 },
+                  { text: '•  Audits de conformité et remédiation', fontSize: 9 }
+                ],
+                margin: [10, 12, 10, 12], fillColor: '#F8FAFC'
+              },
+              {
+                stack: [
+                  { text: '◼  Outils & process', bold: true, color: '#1E3A8A', fontSize: 10 },
+                  { text: '', margin: [0, 4, 0, 0] },
+                  { text: '•  Securits Design Studio (moteur interne)', fontSize: 9 },
+                  { text: '•  Calculs automatisés — moteur NF C 15-100', fontSize: 9 },
+                  { text: '•  Validation continue à chaque saisie', fontSize: 9 },
+                  { text: '•  Schémas unifilaires vectoriels', fontSize: 9 },
+                  { text: '•  Nomenclature Excel + note de calcul PDF', fontSize: 9 },
+                  { text: '•  Génération de dossiers client signables', fontSize: 9 }
+                ],
+                margin: [10, 12, 10, 12], fillColor: '#FFF7ED'
+              }
+            ]
+          ]
+        },
+        layout: 'noBorders'
+      },
+      { text: '', margin: [0, 14, 0, 0] },
+      {
+        table: {
+          widths: ['100%'],
+          body: [[
+            {
+              stack: [
+                { text: '◼  Engagement de résultat', bold: true, color: '#047857', fontSize: 10 },
+                { text: '', margin: [0, 4, 0, 0] },
+                { text: 'Chaque dossier remis est le reflet d\'une installation pensée pour DURER : composants de marques reconnues (Legrand, Schneider, Hager, ABB, Télémécanique), calibres vérifiés, longueurs et sections conformes à la norme en vigueur. Si une anomalie résiduelle apparaît, nous la documentons et vous expliquons pourquoi — jamais nous ne laissons passer un défaut silencieux.', fontSize: 9.5, color: '#1F2937', lineHeight: 1.3 }
+              ],
+              margin: [10, 10, 10, 10], fillColor: '#ECFDF5'
+            }
+          ]]
+        },
+        layout: 'noBorders'
+      },
+      { text: '', pageBreak: 'after' },
+
+      // ───── PAGE 1.3 — Pourquoi ce dossier ─────
+      { text: 'POURQUOI CE DOSSIER EST ESSENTIEL', style: 'h1' },
+      { text: 'Les quatre piliers qui justifient la validation de votre projet', style: 'h2', color: '#475569' },
+      { text: '', margin: [0, 8, 0, 0] },
+      {
+        table: {
+          widths: ['*', '*'],
+          body: [
+            [
+              {
+                stack: [
+                  { canvas: [{ type: 'rect', x: 0, y: 0, w: 14, h: 14, color: '#B91C1C' }] },
+                  { text: 'SÉCURITÉ DES PERSONNES', bold: true, color: '#B91C1C', fontSize: 11, margin: [20, -14, 0, 0] },
+                  { text: '', margin: [0, 4, 0, 0] },
+                  { text: 'Une installation mal dimensionnée, c\'est un risque d\'électrocution, d\'incendie d\'origine électrique, de court-circuit destructeur. Le NF C 15-100 encadre chaque calibre, chaque section, chaque différentiel pour protéger les occupants. Ce dossier garantit que chaque circuit est étudié pour ne jamais surdimensionner ni sous-dimensionner la protection.', fontSize: 9, color: '#1F2937', lineHeight: 1.3 }
+                ],
+                margin: [10, 12, 10, 12], fillColor: '#FEF2F2'
+              },
+              {
+                stack: [
+                  { canvas: [{ type: 'rect', x: 0, y: 0, w: 14, h: 14, color: '#1E3A8A' }] },
+                  { text: 'CONFORMITÉ RÉGLEMENTAIRE', bold: true, color: '#1E3A8A', fontSize: 11, margin: [20, -14, 0, 0] },
+                  { text: '', margin: [0, 4, 0, 0] },
+                  { text: 'La NF C 15-100 est d\'application OBLIGATOIRE pour toute installation neuve en République du Congo comme en France. Le contrôle Consuel, un bureau de vérification agréé ou votre assureur peut à tout moment exiger la note de calcul. Ce dossier constitue cette preuve documentaire et vous protège en cas de sinistre ou de revente.', fontSize: 9, color: '#1F2937', lineHeight: 1.3 }
+                ],
+                margin: [10, 12, 10, 12], fillColor: '#EFF6FF'
+              }
+            ],
+            [
+              {
+                stack: [
+                  { canvas: [{ type: 'rect', x: 0, y: 0, w: 14, h: 14, color: '#047857' }] },
+                  { text: 'COUVERTURE ASSURANCE', bold: true, color: '#047857', fontSize: 11, margin: [20, -14, 0, 0] },
+                  { text: '', margin: [0, 4, 0, 0] },
+                  { text: 'En cas d\'incendie ou de sinistre d\'origine électrique, l\'assureur vérifie toujours la conformité de l\'installation. Une installation non documentée peut entraîner une DÉCHÉANCE DE GARANTIE. Le présent dossier, signé par vous et l\'électricien, constitue la preuve que l\'installation a été conçue dans les règles de l\'art au moment des travaux.', fontSize: 9, color: '#1F2937', lineHeight: 1.3 }
+                ],
+                margin: [10, 12, 10, 12], fillColor: '#ECFDF5'
+              },
+              {
+                stack: [
+                  { canvas: [{ type: 'rect', x: 0, y: 0, w: 14, h: 14, color: '#F7941D' }] },
+                  { text: 'VALEUR PATRIMONIALE', bold: true, color: '#F7941D', fontSize: 11, margin: [20, -14, 0, 0] },
+                  { text: '', margin: [0, 4, 0, 0] },
+                  { text: 'Une installation électrique conforme et documentée augmente la valeur vénale et la rapidité de revente d\'un bien immobilier. Les acquéreurs et leurs banques exigent de plus en plus un dossier technique complet avant signature. Vous l\'avez déjà. C\'est un actif transmissible.', fontSize: 9, color: '#1F2937', lineHeight: 1.3 }
+                ],
+                margin: [10, 12, 10, 12], fillColor: '#FFF7ED'
+              }
+            ]
+          ]
+        },
+        layout: 'noBorders'
+      },
+      { text: '', margin: [0, 12, 0, 0] },
+      {
+        table: {
+          widths: ['100%'],
+          body: [[
+            {
+              text: 'En signant ce dossier, vous ne payez pas un service — vous éliminez un risque, vous sécurisez un patrimoine, et vous donnez à votre installation les meilleures chances de fonctionner 30 ans sans incident.',
+              fontSize: 10, bold: true, color: '#0F172A', italics: true,
+              fillColor: '#F8FAFC', margin: [10, 12, 10, 12], alignment: 'center'
+            }
+          ]]
+        },
+        layout: 'noBorders'
+      },
+      { text: '', pageBreak: 'after' },
+
+      // ───── PAGE 1.4 — Méthodologie ─────
+      { text: 'NOTRE MÉTHODOLOGIE EN 5 ÉTAPES', style: 'h1' },
+      { text: 'Comment ce dossier a été construit', style: 'h2', color: '#475569' },
+      { text: '', margin: [0, 10, 0, 0] },
+      {
+        table: {
+          widths: ['auto', '*'],
+          body: [1, 2, 3, 4, 5].flatMap((step) => {
+            const stepData: Record<number, { title: string; body: string }> = {
+              1: { title: 'Audit du besoin & relevé sur site', body: 'Cadrage du projet avec le maître d\'ouvrage, inventaire des récepteurs (éclairage, prises, cuisine, climatisation, motorisation), détermination des puissances et contraintes locales.' },
+              2: { title: 'Saisie dans Securits Design Studio', body: 'Chaque composant est saisi dans notre outil métier interne. Le moteur de calcul calcule en temps réel : courant d\'emploi (Ib), courant admissible (Iz), chute de tension (ΔU), courants de court-circuit (Icc), règle de l\'aval.' },
+              3: { title: 'Validation automatique NF C 15-100', body: 'À chaque saisie, l\'application vérifie la conformité : sections minimales, calibres maximum, types de différentiels (AC/A/Hpi), nombre de circuits par différentiel. Les anomalies sont détectées en amont, pas après coup.' },
+              4: { title: 'Production des documents', body: 'Le schéma unifilaire est rendu visuellement. La nomenclature Excel, la note de calcul PDF et le présent dossier client sont générés automatiquement — pas d\'erreur de ressaisie, pas d\'oubli.' },
+              5: { title: 'Validation & signature tripartite', body: 'Ce document est remis au client pour signature après relecture. Une fois signé, il est conservé dans le dossier de l\'installation. Une copie numérique reste dans l\'application (Dexie/IndexedDB) et dans le cloud si l\'option Firebase est activée.' }
+            };
+            const d = stepData[step];
+            return [[
+              {
+                stack: [
+                  { canvas: [{ type: 'circle', x: 15, y: 15, r: 14, color: '#1E3A8A', fillOpacity: 1 }] },
+                  { text: String(step), fontSize: 14, bold: true, color: '#FFFFFF', alignment: 'center', margin: [0, -18, 0, 0] }
+                ],
+                margin: [8, 18, 8, 8]
+              },
+              {
+                stack: [
+                  { text: d.title, bold: true, color: '#1E3A8A', fontSize: 11 },
+                  { text: d.body, fontSize: 9, color: '#1F2937', margin: [0, 4, 0, 0], lineHeight: 1.3 }
+                ],
+                margin: [10, 12, 10, 10]
+              }
+            ]];
+          })
+        },
+        layout: 'noBorders'
+      },
+      { text: '', pageBreak: 'after' },
+
+      // ───── PAGE 1.5 — Synthèse projet ─────
+      { text: 'VOTRE PROJET EN UN COUP D\'ŒIL', style: 'h1' },
+      { text: 'Synthèse managériale destinée à la décision', style: 'h2', color: '#475569' },
+      { text: '', margin: [0, 10, 0, 0] },
+      {
+        columns: [
+          { width: '*', text: '' },
+          {
+            width: 'auto',
+            stack: [
+              { canvas: [{ type: 'rect', x: 0, y: 0, w: 250, h: 90, color: '#1E3A8A' }] },
+              { text: 'COFFRETS INSTALLÉS', color: '#FFFFFF', fontSize: 9, alignment: 'center', margin: [0, 12, 0, 0], characterSpacing: 0.6 },
+              { text: String(cabinets.length), color: '#FFFFFF', fontSize: 32, bold: true, alignment: 'center', margin: [0, 4, 0, 0] },
+              { text: 'tableaux électriques', color: 'rgba(255,255,255,0.8)', fontSize: 8, alignment: 'center', margin: [0, 2, 0, 0] }
+            ]
+          },
+          { width: 14, text: '' },
+          {
+            width: 'auto',
+            stack: [
+              { canvas: [{ type: 'rect', x: 0, y: 0, w: 250, h: 90, color: '#F7941D' }] },
+              { text: 'PUISSANCE TOTALE', color: '#FFFFFF', fontSize: 9, alignment: 'center', margin: [0, 12, 0, 0], characterSpacing: 0.6 },
+              { text: `${(totalInstalledPowerW / 1000).toFixed(1)} kW`, color: '#FFFFFF', fontSize: 28, bold: true, alignment: 'center', margin: [0, 6, 0, 0] },
+              { text: `simultanée ${(totalSimultaneousPowerW / 1000).toFixed(1)} kW`, color: 'rgba(255,255,255,0.85)', fontSize: 8, alignment: 'center', margin: [0, 2, 0, 0] }
+            ]
+          }
+        ]
+      },
+      { text: '', margin: [0, 14, 0, 0] },
+      {
+        columns: [
+          { width: '*', text: '' },
+          {
+            width: 'auto',
+            stack: [
+              { canvas: [{ type: 'rect', x: 0, y: 0, w: 250, h: 90, color: '#8B1E3F' }] },
+              { text: 'CIRCUITS PROTÉGÉS', color: '#FFFFFF', fontSize: 9, alignment: 'center', margin: [0, 12, 0, 0], characterSpacing: 0.6 },
+              { text: String(totalLoads), color: '#FFFFFF', fontSize: 32, bold: true, alignment: 'center', margin: [0, 4, 0, 0] },
+              { text: 'récepteurs normalisés', color: 'rgba(255,255,255,0.85)', fontSize: 8, alignment: 'center', margin: [0, 2, 0, 0] }
+            ]
+          },
+          { width: 14, text: '' },
+          {
+            width: 'auto',
+            stack: [
+              { canvas: [{ type: 'rect', x: 0, y: 0, w: 250, h: 90, color: totalViolations === 0 ? '#047857' : '#B91C1C' }] },
+              { text: totalViolations === 0 ? 'CONFORMITÉ NF C 15-100' : 'ANOMALIES RÉSIDUELLES', color: '#FFFFFF', fontSize: 9, alignment: 'center', margin: [0, 12, 0, 0], characterSpacing: 0.6 },
+              { text: totalViolations === 0 ? '✓ OK' : String(totalViolations), color: '#FFFFFF', fontSize: 32, bold: true, alignment: 'center', margin: [0, 4, 0, 0] },
+              { text: totalViolations === 0 ? 'à signer pour validation' : `${totalErrors} erreur(s) · ${totalWarnings} avert.`, color: 'rgba(255,255,255,0.85)', fontSize: 8, alignment: 'center', margin: [0, 2, 0, 0] }
+            ]
+          }
+        ]
+      },
+      { text: '', margin: [0, 16, 0, 0] },
+      {
+        table: {
+          widths: ['100%'],
+          body: [[
+            {
+              stack: [
+                { text: 'RÉCAPITULATIF TECHNIQUE', bold: true, color: '#1E3A8A', fontSize: 10 },
+                { text: '', margin: [0, 4, 0, 0] },
+                { text: `•  Abonnement électrique préconisé : ${recommendedKVA} kVA — Disjoncteur de tête ${recommendedBreakerA} A`, fontSize: 9, color: '#1F2937' },
+                { text: `•  Réseau d'alimentation : ${hasAnyThreePhase ? '400V Triphasé (3P+N + PE)' : '230V Monophasé (1P+N + PE)'}`, fontSize: 9, color: '#1F2937' },
+                { text: `•  Courant de ligne simultané estimé : ${estimatedCurrentA.toFixed(1)} A${hasAnyThreePhase ? ' / phase' : ''}`, fontSize: 9, color: '#1F2937' },
+                { text: `•  Taux d'utilisation de l'abonnement préconisé : ${((estimatedCurrentA / recommendedBreakerA) * 100).toFixed(0)} % (cible d'ingénierie ≤ 70 %)`, fontSize: 9, color: '#1F2937' },
+                { text: `•  Composants totales (tous types) : ${totalComponents}`, fontSize: 9, color: '#1F2937' },
+                { text: `•  Coffrets intégralement conformes : ${cabinetReports.filter((r) => r.violations.length === 0).length} / ${cabinetReports.length}`, fontSize: 9, color: '#1F2937', margin: [0, 2, 0, 0] }
+              ],
+              fillColor: '#F8FAFC',
+              margin: [12, 12, 12, 12]
+            }
+          ]]
+        },
+        layout: 'noBorders'
+      },
+      { text: '', pageBreak: 'after' },
+
+      // ───── PAGE 1.6 — Call to action ─────
+      { text: 'PROCHAINES ÉTAPES & VALIDATION', style: 'h1' },
+      { text: 'Trois actions concrètes pour passer de la conception à la pose', style: 'h2', color: '#475569' },
+      { text: '', margin: [0, 10, 0, 0] },
+      {
+        table: {
+          widths: ['auto', '*'],
+          body: [1, 2, 3].flatMap((step) => {
+            const stepData: Record<number, { title: string; body: string; color: string }> = {
+              1: { title: 'LECTURE & VALIDATION DE LA PARTIE 1', body: 'Vous relisez la présente Partie 1 (conviction) et la Partie 2 (technique). Si un point mérite une explication complémentaire, contactez-nous — nous fournissons tous les éclairages demandés AVANT la signature.', color: '#1E3A8A' },
+              2: { title: 'SIGNATURE TRIPARTITE (PARTIE 2 — page Signatures)', body: 'Vous, l\'électricien responsible et éventuellement le bureau de contrôle signé l\'attestation de conformité technique en fin de Partie 2. Cette signature déclenche la phase d\'exécution.', color: '#8B1E3F' },
+              3: { title: 'MISE EN SERVICE & REMISE DU DOSSIER FINAL', body: 'À l\'issue des travaux, l\'électricien effectue les essais d\'isolement, mesure la résistance de terre et consigne les valeurs dans la Partie 2. Une copie signée est conservée par Securits Technologies, une vous est remise, et une troisième est jointe au Consuel.', color: '#047857' }
+            };
+            const d = stepData[step];
+            return [[
+              {
+                canvas: [{ type: 'rect', x: 0, y: 0, w: 38, h: 38, color: d.color, fillOpacity: 1, lineColor: d.color, lineWidth: 0 }],
+                text: String(step), fontSize: 22, bold: true, color: '#FFFFFF', alignment: 'center', margin: [0, 4, 0, 0]
+              },
+              {
+                stack: [
+                  { text: d.title, bold: true, color: d.color, fontSize: 11 },
+                  { text: d.body, fontSize: 9, color: '#1F2937', margin: [0, 4, 0, 0], lineHeight: 1.3 }
+                ],
+                margin: [10, 8, 8, 8]
+              }
+            ]];
+          })
+        },
+        layout: 'noBorders'
+      },
+      { text: '', margin: [0, 18, 0, 0] },
+      {
+        table: {
+          widths: ['100%'],
+          body: [[
+            {
+              stack: [
+                { text: 'NOTRE ENGAGEMENT', bold: true, color: '#1E3A8A', fontSize: 11 },
+                { text: '', margin: [0, 6, 0, 0] },
+                { text: 'Si une seule des prescriptions de la Partie 2 se révélait incorrecte ou incomplète au moment de la mise en service, Securits Technologies s\'engage à reprendre le calcul sans frais supplémentaires, jusqu\'à pleine conformité. C\'est notre signature : la rigueur technique n\'est pas un coût, c\'est une garantie.', fontSize: 10, color: '#0F172A', italics: true, lineHeight: 1.3 }
+              ],
+              fillColor: '#FFF7ED',
+              margin: [14, 14, 14, 14]
+            }
+          ]]
+        },
+        layout: 'noBorders'
+      },
+
+      // ═══════════════════════════════════════════════════════════════════
+      //  PARTIE 2 — DOSSIER TECHNIQUE NF C 15-100
+      //  La page suivante est la couverture technique ; tout le contenu
+      //  technique détaillé suit immédiatement après.
+      // ═══════════════════════════════════════════════════════════════════
+      { text: '', pageBreak: 'after' },
+      {
+        table: {
+          widths: ['100%'],
+          body: [[
+            {
+              stack: [
+                { canvas: [{ type: 'rect', x: 0, y: 0, w: 515, h: 8, color: '#1E3A8A' }] },
+                { text: ' ', fontSize: 4 },
+                { text: 'PARTIE 2', bold: true, color: '#1E3A8A', fontSize: 12, alignment: 'center', characterSpacing: 4, margin: [0, 30, 0, 0] },
+                { text: 'DOSSIER TECHNIQUE', bold: true, color: '#0F172A', fontSize: 28, alignment: 'center', margin: [0, 10, 0, 0] },
+                { text: 'NF C 15-100 · Calculs · Conformité · Schémas', color: '#475569', fontSize: 12, alignment: 'center', margin: [0, 6, 0, 0] },
+                { canvas: [{ type: 'line', x1: 130, y1: 30, x2: 385, y2: 30, lineWidth: 1.5, lineColor: '#F7941D' }] },
+                { text: 'Cette partie contient l\'ensemble des calculs, schémas unifilaires,', fontSize: 10, color: '#64748B', alignment: 'center', margin: [0, 30, 0, 0] },
+                { text: 'analyse de conformité et les espaces de signature tripartite.', fontSize: 10, color: '#64748B', alignment: 'center', margin: [0, 2, 0, 0] }
+              ],
+              fillColor: '#FFFFFF',
+              margin: [20, 100, 20, 100]
+            }
+          ]]
+        },
+        layout: 'noBorders'
+      },
+      { text: '', pageBreak: 'after' },
+
+      // ════════════ PAGE 1 : COUVERTURE TECHNIQUE ════════════
       { text: '', margin: [0, 60, 0, 0] },
       {
         columns: [
