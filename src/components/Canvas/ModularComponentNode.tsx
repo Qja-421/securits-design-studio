@@ -15,6 +15,18 @@ interface ModularComponentNodeProps {
   onDragEnd: (e: any) => void;
 }
 
+/**
+ * ModularComponentNode — Realistic-looking electrical module.
+ *
+ * Renders a photo-style breaker/diff/general-protection with:
+ *   - Top + bottom screw terminals (visible chrome cross-head screws)
+ *   - White ABS plastic front plate with multi-stop gradient
+ *   - Brand stripe + brand name + reference number
+ *   - Calibre label (C10/C16/C20/…) on the front plate
+ *   - Rocker switch with I-ON / O-OFF markings (depth via inner shadow)
+ *   - Test button (T) for differentials
+ *   - Selection highlight
+ */
 export const ModularComponentNode: React.FC<ModularComponentNodeProps> = ({
   component,
   x,
@@ -30,18 +42,35 @@ export const ModularComponentNode: React.FC<ModularComponentNodeProps> = ({
   const props = component.properties;
   const width = widthModules * moduleWidthPx;
 
-  // Brand-aware theme
   const brand = resolveBrand(props.brand);
   const isDiff = type === 'differential';
   const isGeneral = type === 'general_protection';
   const isBreaker = type === 'breaker';
-  const isON = true; // Simulated ON status
+  const isON = true;
 
-  // Brand-specific colors
-  const fills = isGeneral
-    ? ['#3d3d3a', '#262624'] // General protection (VISTOP / iSW) keeps a dark body
-    : brand.bodyGradient;
-  const textColor = isGeneral ? '#ffffff' : '#1a1a1a';
+  // ─── Color palette per type / brand ───
+  // For differential: keep white body with brand colors (like real Hager/Schneider diffs)
+  // For general protection (VISTOP / iSW): dark body to match real products
+  const bodyGradient = isGeneral
+    ? ['#3F3F46', '#27272A', '#0F172A'] as const
+    : [brand.bodyGradient[0], '#FAFAF8', brand.bodyGradient[1]] as const;
+  const bodyShadow = isGeneral ? '#000000' : brand.bodyShadow;
+  const textColor = isGeneral ? '#FFFFFF' : '#1F2937';
+  const accentColor = isGeneral ? '#F7941D' : brand.brandStripeColor;
+
+  // Width-aware font scaling (so labels stay readable across 1/2/4 module widths)
+  const fontScale = Math.min(1, Math.max(0.7, width / 35));
+  const labelFont = (base: number) => base * fontScale;
+
+  // Calibre text (e.g. "C16", "C20", "C32", "40A")
+  const calibreText = isDiff
+    ? `${props.ratingA}A`
+    : isGeneral
+      ? `${props.ratingA}A`
+      : `${props.curve || 'C'}${props.ratingA}`;
+
+  // Reference family (per brand theme, per type)
+  const reference = brand.referenceByType[type] || brand.referencePrefix;
 
   return (
     <Group
@@ -61,248 +90,275 @@ export const ModularComponentNode: React.FC<ModularComponentNodeProps> = ({
         onSelect();
       }}
     >
-      {/* 3D Moulded Plastic Box Base — brand gradient */}
+      {/* ── 1. Top screw terminal cavity ── */}
+      {/* The plastic cavity that hosts the wire-clamping screw */}
       <Rect
-        x={0}
-        y={0}
-        width={width}
-        height={height}
-        fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-        fillLinearGradientEndPoint={{ x: 0, y: height }}
-        fillLinearGradientColorStops={[
-          0, fills[0],
-          0.05, fills[0],
-          0.95, fills[1],
-          1, isGeneral ? '#1a1a1a' : brand.bodyShadow
-        ]}
-        stroke={isSelected ? '#F7941D' : '#8a8a80'}
-        strokeWidth={isSelected ? 2 : 1}
-        cornerRadius={4}
-        shadowColor="black"
-        shadowBlur={6}
-        shadowOffset={{ x: 2, y: 4 }}
-        shadowOpacity={0.25}
+        x={width / 2 - 9} y={2}
+        width={18} height={11}
+        fill="#1F2937"
+        cornerRadius={1.2}
+        shadowColor="black" shadowBlur={1} shadowOffset={{ x: 0, y: 0.6 }} shadowOpacity={0.5}
       />
+      {/* Cross-head chrome screw */}
+      <ChromeScrew cx={width / 2} cy={7.5} radius={3.2} />
 
-      {/* Top and Bottom Terminal Cavities (Câblage slots) */}
-      <Rect x={width / 2 - 6} y={3} width={12} height={8} fill="#2c2c2a" cornerRadius={1} />
-      <Line points={[width / 2 - 4, 7, width / 2 + 4, 7]} stroke="#777" strokeWidth={1} />
-      <Rect x={width / 2 - 6} y={height - 11} width={12} height={8} fill="#2c2c2a" cornerRadius={1} />
-      <Line points={[width / 2 - 4, height - 7, width / 2 + 4, height - 7]} stroke="#777" strokeWidth={1} />
-
-      {/* Fixing Screws (realistic metal pins) */}
-      <Circle x={8} y={8} radius={2.5} fill="#9ca3af" stroke="#4b5563" strokeWidth={0.5} />
-      <Line points={[6.5, 8, 9.5, 8]} stroke="#374151" strokeWidth={0.5} />
-      <Circle x={width - 8} y={height - 8} radius={2.5} fill="#9ca3af" stroke="#4b5563" strokeWidth={0.5} />
-      <Line points={[width - 9.5, height - 8, width - 6.5, height - 8]} stroke="#374151" strokeWidth={0.5} />
-
-      {/* Front Plate Faceplate (Inner module boundary) — brand-specific */}
+      {/* ── 2. Brand stripe (thin colored band at top of front plate) ── */}
       <Rect
-        x={2}
-        y={15}
-        width={width - 4}
-        height={height - 30}
-        fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-        fillLinearGradientEndPoint={{ x: 0, y: height - 30 }}
-        fillLinearGradientColorStops={[0, brand.frontPlateGradient[0], 1, brand.frontPlateGradient[1]]}
-        stroke="#dcdcd6"
-        strokeWidth={1}
-        cornerRadius={2}
-      />
-
-      {/* General protection specific design (VISTOP / iSW dark front plate) */}
-      {isGeneral && (
-        <Rect x={2} y={15} width={width - 4} height={height - 30} fill="#1c1c1a" stroke="#333" strokeWidth={1} cornerRadius={2} />
-      )}
-
-      {/* Top brand stripe — visible signature per brand */}
-      <Rect
-        x={2}
-        y={15}
-        width={width - 4}
-        height={3}
+        x={1.5} y={14}
+        width={width - 3} height={4.2}
         fill={brand.brandStripeColor}
-        cornerRadius={[2, 2, 0, 0]}
+        cornerRadius={[1.5, 1.5, 0, 0]}
+      />
+      {/* Highlight on the stripe top */}
+      <Line
+        points={[2, 14.6, width - 2, 14.6]}
+        stroke="rgba(255,255,255,0.5)"
+        strokeWidth={0.6}
       />
 
-      {/* Brand Name Label — printed on the front plate */}
+      {/* ── 3. Front plate body — multi-stop plastic gradient ── */}
+      <Rect
+        x={1.5} y={18.2}
+        width={width - 3} height={height - 32}
+        fillLinearGradientStartPoint={{ x: 0, y: 0 }}
+        fillLinearGradientEndPoint={{ x: 0, y: height - 32 }}
+        fillLinearGradientColorStops={[
+          0, bodyGradient[0],
+          0.04, bodyGradient[0],
+          0.5, bodyGradient[1],
+          0.96, bodyGradient[2],
+          1, bodyShadow
+        ]}
+        stroke={isSelected ? '#F7941D' : (isGeneral ? '#1F2937' : '#9CA3AF')}
+        strokeWidth={isSelected ? 2 : 0.5}
+        cornerRadius={[0, 0, 1.5, 1.5]}
+        shadowColor="black" shadowBlur={2} shadowOffset={{ x: 0.5, y: 1 }} shadowOpacity={0.3}
+      />
+
+      {/* Inner recessed rim — like real breakers have a beveled front plate */}
+      <Rect
+        x={3.5} y={20.5}
+        width={width - 7} height={height - 36}
+        fill="none"
+        stroke={isGeneral ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)'}
+        strokeWidth={0.4}
+        cornerRadius={1}
+      />
+
+      {/* ── 4. Brand name printed on front plate ── */}
       <Text
-        x={4}
-        y={20}
-        width={width - 8}
-        text={isGeneral ? 'Securits' : brand.shortName}
-        fontFamily="sans-serif"
-        fontSize={width > 50 ? 7.5 : 6.5}
+        x={3} y={22}
+        width={width - 6}
+        text={isGeneral ? 'SECURITS' : brand.shortName.toUpperCase()}
+        fontSize={labelFont(6.5)}
         fontStyle="bold"
-        fill={isGeneral ? brand.brandStripeColor : brand.brandLabelColor}
+        fill={isGeneral ? '#F7941D' : brand.brandLabelColor}
         align="center"
+        fontFamily="Inter, sans-serif"
       />
 
-      {/* Product Reference Number — brand-specific family code */}
+      {/* ── 5. Reference number (small monospace below brand) ── */}
       <Text
-        x={4}
-        y={30}
-        width={width - 8}
-        text={brand.referenceByType[type] || brand.referencePrefix}
+        x={3} y={29.5}
+        width={width - 6}
+        text={reference}
+        fontSize={labelFont(5)}
+        fontStyle="bold"
+        fill={isGeneral ? 'rgba(255,255,255,0.7)' : '#64748B'}
+        align="center"
         fontFamily="monospace"
-        fontSize={6}
-        fill={isGeneral ? '#999' : '#666'}
-        align="center"
       />
 
-      {/* Technical Ratings — calibre In */}
+      {/* ── 6. Calibre label — large, prominent (the "C16" sticker look) ── */}
+      <Rect
+        x={3} y={36}
+        width={width - 6} height={20}
+        fill="rgba(255,255,255,0.55)"
+        stroke="rgba(0,0,0,0.12)"
+        strokeWidth={0.4}
+        cornerRadius={1}
+      />
       <Text
-        x={4}
-        y={38}
-        width={width - 8}
-        text={isDiff ? `${props.ratingA}A` : (isGeneral ? `${props.ratingA}A` : `${props.curve || 'C'}${props.ratingA}`)}
-        fontFamily="sans-serif"
-        fontSize={9.5}
+        x={3} y={38.5}
+        width={width - 6}
+        text={calibreText}
+        fontSize={labelFont(11)}
         fontStyle="bold"
-        fill={textColor}
+        fill={isGeneral ? '#FFFFFF' : '#0F172A'}
         align="center"
+        fontFamily="Inter, sans-serif"
       />
 
-      {/* Voltage */}
+      {/* ── 7. Voltage label (230V / 400V) ── */}
       <Text
-        x={4}
-        y={height - 38}
-        width={width - 8}
-        text={props.poles === '4P' ? '400V~' : '230V~'}
-        fontFamily="sans-serif"
-        fontSize={6.5}
-        fill={isGeneral ? '#999' : '#888'}
+        x={3} y={height - 22}
+        width={width - 6}
+        text={props.poles === '4P' ? '400V~' : props.poles === '3P' ? '400V~' : '230V~'}
+        fontSize={labelFont(5.5)}
+        fill={isGeneral ? 'rgba(255,255,255,0.7)' : '#64748B'}
         align="center"
+        fontFamily="monospace"
       />
 
-      {/* Differential sensitivity type banner */}
+      {/* ── 8. Differential extras ── */}
       {isDiff && (
-        <Group x={4} y={48} width={width - 8}>
-          <Text
-            x={0}
-            y={0}
-            width={width - 8}
-            text={props.sensitivity}
-            fontFamily="sans-serif"
-            fontSize={7}
-            fontStyle="bold"
-            fill="#d97706"
-            align="center"
-          />
+        <Group>
+          {/* 30mA sensitivity sticker */}
           <Rect
-            x={width / 2 - 12}
-            y={9}
-            width={16}
-            height={7}
-            fill="#ef4444"
-            cornerRadius={1.5}
+            x={3} y={height / 2 - 4}
+            width={width - 6} height={9}
+            fill="#0F172A"
+            cornerRadius={1.2}
+            shadowColor="black" shadowBlur={1} shadowOffset={{ x: 0, y: 0.5 }} shadowOpacity={0.4}
           />
           <Text
-            x={0}
-            y={9.5}
-            width={width - 8}
-            text={props.diffType || 'AC'}
-            fontFamily="sans-serif"
-            fontSize={5.5}
+            x={3} y={height / 2 - 2}
+            width={width - 6}
+            text={props.sensitivity || '30mA'}
+            fontSize={labelFont(6.5)}
             fontStyle="bold"
-            fill="#fff"
+            fill="#FACC15"
             align="center"
+            fontFamily="Inter, sans-serif"
+          />
+          {/* Type AC/A/Hpi mini badge below */}
+          <Rect
+            x={width / 2 - 9} y={height / 2 + 7}
+            width={18} height={8}
+            fill="#DC2626"
+            cornerRadius={1.2}
+            shadowColor="black" shadowBlur={0.5} shadowOpacity={0.3}
+          />
+          <Text
+            x={width / 2 - 9} y={height / 2 + 8}
+            width={18}
+            text={props.diffType || 'AC'}
+            fontSize={labelFont(5.5)}
+            fontStyle="bold"
+            fill="#FFFFFF"
+            align="center"
+            fontFamily="Inter, sans-serif"
+          />
+          {/* Test button (T) — round, magenta, on the right side */}
+          <Circle
+            x={width - 7} y={height / 2 - 8}
+            radius={labelFont(4.5)}
+            fillLinearGradientStartPoint={{ x: -3, y: -3 }}
+            fillLinearGradientEndPoint={{ x: 3, y: 3 }}
+            fillLinearGradientColorStops={[0, '#F472B6', 1, '#9D174D']}
+            stroke="#831843" strokeWidth={0.4}
+            shadowColor="black" shadowBlur={1} shadowOffset={{ x: 0, y: 0.6 }} shadowOpacity={0.5}
+          />
+          <Text
+            x={width - 10} y={height / 2 - 11}
+            text="T"
+            fontSize={labelFont(5.5)}
+            fontStyle="bold"
+            fill="#FFFFFF"
+            fontFamily="Inter, sans-serif"
           />
         </Group>
       )}
 
-      {/* ON/OFF Bascule Switch — brand-colored ON state */}
-      <Group x={width / 2 - 5} y={height / 2 - 12}>
-        <Rect x={-2} y={-4} width={14} height={28} fill="#262624" stroke="#444" strokeWidth={0.5} cornerRadius={2} />
+      {/* ── 9. Rocker switch (ON/OFF) with I-ON/O-OFF markings ── */}
+      <Group x={width / 2 - 5.5} y={height / 2 - 9}>
+        {/* Recessed slot */}
         <Rect
-          x={0}
-          y={isON ? 0 : 10}
-          width={10}
-          height={14}
+          x={-2.5} y={-5}
+          width={16} height={32}
+          fill="#0F172A"
+          stroke="#1F2937"
+          strokeWidth={0.4}
+          cornerRadius={2.2}
+          shadowColor="black" shadowBlur={1.5} shadowOffset={{ x: 0, y: 0.6 }} shadowOpacity={0.5}
+        />
+        {/* Inner highlight on the slot */}
+        <Line points={[-1.8, -3.8, 13.2, -3.8]} stroke="rgba(255,255,255,0.18)" strokeWidth={0.5} />
+        {/* Rocker body — moved up when ON, down when OFF */}
+        <Rect
+          x={-0.2} y={isON ? 0 : 11}
+          width={11} height={15}
           fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-          fillLinearGradientEndPoint={{ x: 0, y: 14 }}
+          fillLinearGradientEndPoint={{ x: 0, y: 15 }}
           fillLinearGradientColorStops={[
             0, isON ? brand.rockerOnColor[0] : brand.rockerOffColor[0],
             1, isON ? brand.rockerOnColor[1] : brand.rockerOffColor[1]
           ]}
-          stroke="#111"
-          strokeWidth={0.5}
+          stroke="#0F172A" strokeWidth={0.4}
           cornerRadius={1.5}
-          shadowColor="black"
-          shadowBlur={2}
-          shadowOffset={{ x: 0, y: isON ? 2 : -2 }}
-          shadowOpacity={0.4}
+          shadowColor="black" shadowBlur={1.5} shadowOffset={{ x: 0, y: isON ? 1.2 : -1.2 }} shadowOpacity={0.45}
         />
-        <Line points={[1, isON ? 4 : 14, 9, isON ? 4 : 14]} stroke="#fff" strokeWidth={1} opacity={0.5} />
-        <Line points={[1, isON ? 7 : 17, 9, isON ? 7 : 17]} stroke="#fff" strokeWidth={1} opacity={0.5} />
+        {/* Rocker ridges (texture lines) */}
+        <Line points={[1, isON ? 4 : 15, 10, isON ? 4 : 15]} stroke="rgba(255,255,255,0.5)" strokeWidth={0.7} />
+        <Line points={[1, isON ? 7 : 18, 10, isON ? 7 : 18]} stroke="rgba(255,255,255,0.5)" strokeWidth={0.7} />
+        {/* I-ON label (left of the rocker, at the side it currently points to) */}
         <Text
-          x={-15}
-          y={isON ? 2 : 12}
-          text={isON ? 'I-ON' : 'O-OFF'}
-          fontSize={5.5}
-          fontFamily="monospace"
-          fill={isON ? brand.brandStripeColor : '#ef4444'}
+          x={-9} y={isON ? 1.5 : 13}
+          text="I-ON"
+          fontSize={labelFont(4.5)}
           fontStyle="bold"
+          fill={isON ? brand.brandStripeColor : '#94A3B8'}
+          fontFamily="monospace"
         />
       </Group>
 
-      {/* Differential Pink Test Button */}
-      {isDiff && (
-        <Group x={width - 15} y={height / 2 - 6}>
-          <Circle
-            x={0}
-            y={0}
-            radius={5.5}
-            fillLinearGradientStartPoint={{ x: -4, y: -4 }}
-            fillLinearGradientEndPoint={{ x: 4, y: 4 }}
-            fillLinearGradientColorStops={[0, '#ec4899', 1, '#be185d']}
-            stroke="#9d174d"
-            strokeWidth={0.5}
-            shadowColor="black"
-            shadowBlur={1}
-            shadowOffset={{ x: 0, y: 1 }}
-            shadowOpacity={0.3}
-          />
-          <Text
-            x={-3}
-            y={-3.5}
-            text="T"
-            fontFamily="sans-serif"
-            fontSize={7}
-            fontStyle="bold"
-            fill="#ffffff"
-          />
-        </Group>
-      )}
+      {/* ── 10. Bottom screw terminal cavity ── */}
+      <Rect
+        x={width / 2 - 9} y={height - 13}
+        width={18} height={11}
+        fill="#1F2937"
+        cornerRadius={1.2}
+        shadowColor="black" shadowBlur={1} shadowOffset={{ x: 0, y: -0.4 }} shadowOpacity={0.5}
+      />
+      <ChromeScrew cx={width / 2} cy={height - 7.5} radius={3.2} />
 
-      {/* Visualization glass window (breakers only) */}
-      {isBreaker && (
-        <Rect
-          x={width / 2 - 12}
-          y={height - 24}
-          width={24}
-          height={6}
-          fill="rgba(59, 130, 246, 0.15)"
-          stroke="#93c5fd"
-          strokeWidth={0.5}
-          cornerRadius={0.5}
-        />
-      )}
+      {/* ── 11. Two top fixing screws (small chrome phillips) ── */}
+      <ChromeScrew cx={5} cy={4} radius={1.8} small />
+      <ChromeScrew cx={width - 5} cy={4} radius={1.8} small />
 
-      {/* LED indicator (Parafoudre) */}
+      {/* ── 12. LED indicator for parafoudre ── */}
       {isGeneral && component.properties.name.includes('Parafoudre') && (
-        <Group x={width / 2 - 6} y={height - 24}>
-          <Rect
-            x={0}
-            y={0}
-            width={12}
-            height={6}
-            fill="#10b981"
-            stroke="#059669"
-            strokeWidth={0.5}
-          />
-        </Group>
+        <Rect
+          x={width / 2 - 6} y={height - 30}
+          width={12} height={5}
+          fill="#10B981"
+          stroke="#059669" strokeWidth={0.4}
+          cornerRadius={0.6}
+        />
       )}
     </Group>
   );
 };
+
+/**
+ * ChromeScrew — small chrome phillips screw, used for terminal screws
+ * and fixing screws. Self-contained Konva group.
+ */
+const ChromeScrew: React.FC<{ cx: number; cy: number; radius: number; small?: boolean }> = ({
+  cx,
+  cy,
+  radius,
+  small = false
+}) => (
+  <Group listening={false}>
+    <Circle
+      x={cx}
+      y={cy}
+      radius={radius}
+      fillLinearGradientStartPoint={{ x: -radius, y: -radius }}
+      fillLinearGradientEndPoint={{ x: radius, y: radius }}
+      fillLinearGradientColorStops={[0, '#FFFFFF', 0.45, '#D1D5DB', 1, '#52525B']}
+      stroke="#27272A" strokeWidth={0.3}
+      shadowColor="black" shadowBlur={0.8} shadowOffset={{ x: 0, y: 0.3 }} shadowOpacity={0.55}
+    />
+    {/* Cross-head slot */}
+    <Line
+      points={[cx - radius * 0.65, cy, cx + radius * 0.65, cy]}
+      stroke="#0F172A" strokeWidth={small ? 0.4 : 0.5}
+    />
+    <Line
+      points={[cx, cy - radius * 0.65, cx, cy + radius * 0.65]}
+      stroke="#0F172A" strokeWidth={small ? 0.4 : 0.5}
+    />
+  </Group>
+);
