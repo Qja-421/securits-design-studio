@@ -57,7 +57,7 @@ function App() {
       {/* ── TOP: Ribbon Bar ── */}
       <RibbonBar
         onExportPDF={() => {
-          if (activeCabinet) exportToPDF(activeCabinet, details);
+          exportToPDF(cabinets, details, { activeCabinetId: activeCabinetId ?? undefined });
         }}
         onExportWord={() => {
           if (activeCabinet) exportToWord(activeCabinet, details);

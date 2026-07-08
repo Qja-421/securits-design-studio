@@ -474,44 +474,45 @@ export const RibbonBar: React.FC<RibbonBarProps> = ({
           </div>
         )}
 
-        {/* DOCUMENTS EXPORTS PANEL */}
-        {activeTab === 'documents' && (
-          <div className="flex min-w-max items-center space-x-3">
-            <button
-              onClick={onExportPDF}
-              className="flex items-center space-x-2 px-4 py-2 bg-brand-bordeaux/80 hover:bg-brand-bordeaux text-white text-xs font-bold rounded-lg shadow transition"
-            >
-              <FileText size={16} />
-              <span>Note de Calcul PDF</span>
-            </button>
-            
-            <button
-              onClick={onExportWord}
-              className="flex items-center space-x-2 px-4 py-2 bg-brand-blue text-brand-black text-xs font-bold rounded-lg shadow transition"
-            >
-              <FileText size={16} />
-              <span>Note Client Word</span>
-            </button>
-            
-            <button
-              onClick={onExportExcel}
-              className="flex items-center space-x-2 px-4 py-2 bg-green-700 hover:bg-green-600 text-white text-xs font-bold rounded-lg shadow transition"
-            >
-              <FileSpreadsheet size={16} />
-              <span>Nomenclature Excel</span>
-            </button>
+      {/* DOCUMENTS EXPORTS PANEL */}
+      {activeTab === 'documents' && (
+        <div className="flex min-w-max items-center space-x-3">
+          <button
+            onClick={onExportPDF}
+            title="Dossier Technique complet : couverture, synthèse exécutive, analyse des puissances, détail par coffret avec schémas, conformité NF C 15-100, recommandations, signatures."
+            className="flex items-center space-x-2 px-4 py-2 bg-brand-bordeaux/80 hover:bg-brand-bordeaux text-white text-xs font-bold rounded-lg shadow transition"
+          >
+            <FileText size={16} />
+            <span>Dossier Technique PDF</span>
+          </button>
 
-            <button
-              onClick={() => {
-                alert("Schéma vectoriel SVG copié dans le presse-papiers pour édition externe.");
-              }}
-              className="flex items-center space-x-2 px-4 py-2 bg-black/40 hover:bg-black/60 border border-white/20 text-xs font-semibold rounded-lg text-gray-300 transition"
-            >
-              <LayoutGrid size={16} />
-              <span>Schéma SVG</span>
-            </button>
-          </div>
-        )}
+          <button
+            onClick={onExportWord}
+            className="flex items-center space-x-2 px-4 py-2 bg-brand-blue text-brand-black text-xs font-bold rounded-lg shadow transition"
+          >
+            <FileText size={16} />
+            <span>Note Client Word</span>
+          </button>
+
+          <button
+            onClick={onExportExcel}
+            className="flex items-center space-x-2 px-4 py-2 bg-green-700 hover:bg-green-600 text-white text-xs font-bold rounded-lg shadow transition"
+          >
+            <FileSpreadsheet size={16} />
+            <span>Nomenclature Excel</span>
+          </button>
+
+          <button
+            onClick={() => {
+              alert("Schéma vectoriel SVG copié dans le presse-papiers pour édition externe.");
+            }}
+            className="flex items-center space-x-2 px-4 py-2 bg-black/40 hover:bg-black/60 border border-white/20 text-xs font-semibold rounded-lg text-gray-300 transition"
+          >
+            <LayoutGrid size={16} />
+            <span>Schéma SVG</span>
+          </button>
+        </div>
+      )}
 
         {/* UTILITAIRES PANEL */}
         {activeTab === 'utilitaires' && (
