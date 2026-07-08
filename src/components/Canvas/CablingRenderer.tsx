@@ -264,103 +264,150 @@ export const CablingRenderer: React.FC<{
       })}
 
       {/* ════════════════════════════════════════════════════════════════
-          3. LOAD CIRCUITS — wires from peigne bottom to goulotte + earth bar
-          Each load shows: phase + neutral descending, earth wire to earth bar,
-          cable section label and circuit name.
+          3. LOAD CIRCUITS — wires from peigne bottom to vertical PE gutter
+          Each load shows: phase + neutral descending into the horizontal
+          goulotte, earth wire routed cleanly down a dedicated vertical
+          gutter on the side of the row to the earth bar.
           ════════════════════════════════════════════════════════════════ */}
-      {components.map((c, idx) => {
-        if (c.type !== 'load') return null;
-        const rY = railYPositions[c.rowIndex];
-        const colX = railX + c.moduleIndex * moduleWidthPx;
-        const width = c.widthModules * moduleWidthPx;
-        const xMid = colX + width / 2;
-        const topY = rY + 13;
-        const peigneBottom = peigneY(rY) + 9;
-        const goulotteTop = peigneBottom + 4;
-        const goulotteHeight = 14;
-        const props = c.properties;
-        const isTri = props.voltageV === 400;
-        const phaseColor = isTri ? WIRE.phaseTri : WIRE.phaseMono;
+      {(() => {
+        // Phase wires through horizontal goulotte (per row)
+        const lastRowIndex = railYPositions.length - 1;
+        return railYPositions.map((rY, rowIndex) => {
+          const rowLoads = components.filter((c) => c.rowIndex === rowIndex && c.type === 'load');
+          if (rowLoads.length === 0) return null;
+          const peigneBottom = peigneY(rY) + 9;
+          const goulotteTop = peigneBottom + 4;
+          const goulotteHeight = 12;
+          // Vertical PE gutter runs on the LEFT of the row, from peigneBottom
+          // straight down to the earth bar (or to the next row's gutter).
+          const peGutterX = railX - 8;
+          const peGutterBottomY = rowIndex < lastRowIndex
+            ? railYPositions[rowIndex + 1] + 6
+            : earthBarY - 5;
 
-        // Wires go: from top terminal down through the breaker to peigne,
-        // then bend sideways into the goulotte, run to the side of the row,
-        // then drop down to the earth bar (for PE only).
-        const sideX = c.moduleIndex % 2 === 0 ? colX + width + 12 : colX - 12;
-        const earthLandingX = Math.max(railX + 4, Math.min(railX + railWidth - 4, sideX));
-
-        return (
-          <Group key={`load-${c.id}`} listening={false}>
-            {/* Goulotte (cable tray) horizontal segment under the row */}
-            <Rect
-              x={railX - 8} y={goulotteTop}
-              width={railWidth + 16} height={goulotteHeight}
-              fillLinearGradientStartPoint={{ x: 0, y: goulotteTop }}
-              fillLinearGradientEndPoint={{ x: 0, y: goulotteTop + goulotteHeight }}
-              fillLinearGradientColorStops={[0, '#E5E7EB', 0.5, '#F3F4F6', 1, '#9CA3AF']}
-              stroke="#4B5563" strokeWidth={0.6}
-              cornerRadius={1.5}
-              shadowColor="black" shadowBlur={1.5} shadowOffset={{ x: 0, y: 1 }} shadowOpacity={0.35}
-            />
-            {/* Slot opening */}
-            <Rect
-              x={railX - 4} y={goulotteTop + goulotteHeight / 2 - 1.5}
-              width={railWidth + 8} height={3}
-              fill="#0F172A"
-              cornerRadius={0.6}
-            />
-
-            {/* Phase wire: top terminal -> peigne -> out the goulotte */}
-            <Path
-              data={`M ${xMid} ${topY} L ${xMid} ${peigneBottom} L ${xMid} ${goulotteTop + 2}`}
-              stroke={phaseColor} strokeWidth={2.2} lineCap="round"
-            />
-            {/* Neutral wire */}
-            <Path
-              data={`M ${xMid - 4} ${topY} L ${xMid - 4} ${peigneBottom} L ${xMid - 4} ${goulotteTop + 2}`}
-              stroke={WIRE.neutral} strokeWidth={2.2} lineCap="round"
-            />
-
-            {/* Earth wire: peigne -> goulotte -> drop to earth bar */}
-            <Path
-              data={`M ${xMid + 4} ${peigneBottom} L ${xMid + 4} ${goulotteTop + 2}
-                       L ${earthLandingX} ${goulotteTop + 2}
-                       L ${earthLandingX} ${earthBarY - 5}`}
-              stroke={WIRE.peYellow} strokeWidth={2} lineCap="round"
-            />
-            <Path
-              data={`M ${xMid + 4} ${peigneBottom} L ${xMid + 4} ${goulotteTop + 2}
-                       L ${earthLandingX} ${goulotteTop + 2}
-                       L ${earthLandingX} ${earthBarY - 5}`}
-              stroke={WIRE.peGreen} strokeWidth={1.4} lineCap="round" dash={[5, 3]}
-            />
-
-            {/* Cable label and circuit name positioned above the goulotte */}
-            <CableLabel
-              x={xMid} y={goulotteTop - 14}
-              main={getCableMain(props)}
-              sub={getCableSub(props)}
-            />
-
-            {/* Circuit-name sticker below the goulotte */}
-            <Group>
+          return (
+            <Group key={`row-wires-${rowIndex}`} listening={false}>
+              {/* Horizontal goulotte just under the peigne */}
               <Rect
-                x={colX} y={goulotteTop + goulotteHeight + 4}
-                width={width} height={16}
-                fill="#FFFFFF" stroke="#94A3B8" strokeWidth={0.5}
+                x={railX - 8} y={goulotteTop}
+                width={railWidth + 16} height={goulotteHeight}
+                fillLinearGradientStartPoint={{ x: 0, y: goulotteTop }}
+                fillLinearGradientEndPoint={{ x: 0, y: goulotteTop + goulotteHeight }}
+                fillLinearGradientColorStops={[0, '#E5E7EB', 0.5, '#F3F4F6', 1, '#9CA3AF']}
+                stroke="#4B5563" strokeWidth={0.6}
+                cornerRadius={1.5}
+                shadowColor="black" shadowBlur={1.5} shadowOffset={{ x: 0, y: 1 }} shadowOpacity={0.35}
+              />
+              <Rect
+                x={railX - 4} y={goulotteTop + goulotteHeight / 2 - 1.5}
+                width={railWidth + 8} height={3}
+                fill="#0F172A"
+                cornerRadius={0.6}
+              />
+              {/* Vertical PE gutter (col de cygne descente à la terre) */}
+              <Rect
+                x={peGutterX - 4} y={goulotteTop}
+                width={8} height={peGutterBottomY - goulotteTop}
+                fill="#1F2937"
                 cornerRadius={1}
+                shadowColor="black" shadowBlur={1} shadowOpacity={0.4}
               />
+              {/* Yellow stripe down the gutter */}
+              <Rect
+                x={peGutterX - 4} y={goulotteTop}
+                width={8} height={peGutterBottomY - goulotteTop}
+                fill="#FACC15"
+                opacity={0.6}
+              />
+              {/* Green stripe dash on top */}
+              <Rect
+                x={peGutterX - 4} y={goulotteTop}
+                width={8} height={peGutterBottomY - goulotteTop}
+                fill="#22C55E"
+                opacity={0.5}
+                dash={[4, 3]}
+              />
+              {/* "PE" label on the gutter */}
               <Text
-                x={colX + 2} y={goulotteTop + goulotteHeight + 9}
-                width={width - 4}
-                text={props.name || 'Circuit'}
-                fontSize={6.5} fontStyle="bold" fill="#0F172A"
-                align="center" ellipsis wrap="none"
-                fontFamily="Inter, sans-serif"
+                x={peGutterX - 12} y={(goulotteTop + peGutterBottomY) / 2 - 3}
+                text="PE"
+                fontSize={6} fontStyle="bold" fill="#15803D"
+                fontFamily="monospace"
               />
+
+              {/* Per-load wires + labels */}
+              {rowLoads.map((c) => {
+                const colX = railX + c.moduleIndex * moduleWidthPx;
+                const w = c.widthModules * moduleWidthPx;
+                const xMid = colX + w / 2;
+                const topY = rY + 13;
+                const props = c.properties;
+                const isTri = props.voltageV === 400;
+                const phaseColor = isTri ? WIRE.phaseTri : WIRE.phaseMono;
+                const labelFontSize = Math.min(6.5, Math.max(4.5, w / 6));
+
+                return (
+                  <Group key={`load-${c.id}`} listening={false}>
+                    {/* Phase: top -> peigne -> goulotte */}
+                    <Path
+                      data={`M ${xMid} ${topY} L ${xMid} ${peigneBottom} L ${xMid} ${goulotteTop + 2}`}
+                      stroke={phaseColor} strokeWidth={2.2} lineCap="round"
+                    />
+                    {/* Neutral: top -> peigne -> goulotte */}
+                    <Path
+                      data={`M ${xMid - 4} ${topY} L ${xMid - 4} ${peigneBottom} L ${xMid - 4} ${goulotteTop + 2}`}
+                      stroke={WIRE.neutral} strokeWidth={2.2} lineCap="round"
+                    />
+                    {/* Earth: peigne -> bend -> enter vertical PE gutter -> bar */}
+                    <Path
+                      data={`M ${xMid + 4} ${peigneBottom}
+                               L ${xMid + 4} ${goulotteTop + 2}
+                               L ${peGutterX} ${goulotteTop + 2}
+                               L ${peGutterX} ${peGutterBottomY}`}
+                      stroke={WIRE.peYellow} strokeWidth={2} lineCap="round"
+                    />
+                    <Path
+                      data={`M ${xMid + 4} ${peigneBottom}
+                               L ${xMid + 4} ${goulotteTop + 2}
+                               L ${peGutterX} ${goulotteTop + 2}
+                               L ${peGutterX} ${peGutterBottomY}`}
+                      stroke={WIRE.peGreen} strokeWidth={1.4} lineCap="round" dash={[5, 3]}
+                    />
+
+                    {/* Cable section label (printed sticker) above goulotte */}
+                    <CableLabel
+                      x={xMid} y={goulotteTop - 14}
+                      main={getCableMain(props)}
+                      sub={getCableSub(props)}
+                    />
+
+                    {/* Circuit-name sticker below the goulotte — auto-shrinks font
+                        and allows overflow so 1-module breakers still show their name */}
+                    <Group>
+                      <Rect
+                        x={colX} y={goulotteTop + goulotteHeight + 4}
+                        width={w} height={16}
+                        fill="#FFFFFF" stroke="#94A3B8" strokeWidth={0.5}
+                        cornerRadius={1}
+                      />
+                      <Text
+                        x={colX + 1} y={goulotteTop + goulotteHeight + 9}
+                        width={w - 2}
+                        text={props.name || 'Circuit'}
+                        fontSize={labelFontSize}
+                        fontStyle="bold" fill="#0F172A"
+                        align="center"
+                        fontFamily="Inter, sans-serif"
+                        ellipsis wrap="none"
+                      />
+                    </Group>
+                  </Group>
+                );
+              })}
             </Group>
-          </Group>
-        );
-      })}
+          );
+        });
+      })()}
 
       {/* ════════════════════════════════════════════════════════════════
           4. EARTH BAR — Brass terminal bar at the bottom (laiton)

@@ -361,42 +361,46 @@ export const CabinetCanvas: React.FC<CabinetCanvasProps> = ({
           )}
 
           {/* ════════════════════════════════════════════════════════════════
-              4. BRAND EMBOSSING BAND — printed/embossed brand identity
+              4. BRAND EMBOSSING BAND — inverted high-contrast: brand color
+              background with white text for stronger visibility
               ════════════════════════════════════════════════════════════════ */}
           {!presentationMode && (
             <Group listening={false}>
               <Rect
                 x={22} y={brandBandY} width={cabinetWidth - 44} height={brandBandHeight}
-                fill="#FFFFFF"
-                stroke="#D4D4D0"
+                fillLinearGradientStartPoint={{ x: 0, y: brandBandY }}
+                fillLinearGradientEndPoint={{ x: 0, y: brandBandY + brandBandHeight }}
+                fillLinearGradientColorStops={[0, brand.brandStripeColor, 1, darken(brand.brandStripeColor, 0.25)]}
+                stroke={darken(brand.brandStripeColor, 0.4)}
                 strokeWidth={0.6}
                 cornerRadius={2}
+                shadowColor="black" shadowBlur={2} shadowOffset={{ x: 0, y: 1 }} shadowOpacity={0.35}
               />
-              {/* brand color stripe on the left */}
-              <Rect
-                x={22} y={brandBandY} width={6} height={brandBandHeight}
-                fill={brand.brandStripeColor}
+              {/* Top highlight on the band */}
+              <Line
+                points={[24, brandBandY + 1, cabinetWidth - 24, brandBandY + 1]}
+                stroke="rgba(255,255,255,0.4)" strokeWidth={0.8}
               />
+              {/* Brand name on the left, white on brand color */}
               <Text
-                x={34} y={brandBandY + 3}
+                x={32} y={brandBandY + 3}
                 text={brand.fullName.toUpperCase()}
                 fontSize={9} fontStyle="bold"
-                fill={brand.brandLabelColor}
+                fill="#FFFFFF"
                 fontFamily="Inter, sans-serif"
               />
               <Text
-                x={34} y={brandBandY + 12}
+                x={32} y={brandBandY + 13}
                 text={`${brand.country} · Coffret de répartition NF C 15-100`}
-                fontSize={6.5}
-                fill="#64748B"
+                fontSize={6.5} fill="rgba(255,255,255,0.85)"
                 fontFamily="Inter, sans-serif"
               />
-              {/* Cabinet name on the right */}
+              {/* Cabinet name on the right, on a contrasting dark strip */}
               <Text
                 x={cabinetWidth / 2} y={brandBandY + 4}
                 width={cabinetWidth / 2 - 30}
                 text={(activeCabinet?.name || 'Coffret').toUpperCase()}
-                fontSize={10} fontStyle="bold" fill="#0F172A"
+                fontSize={10} fontStyle="bold" fill="#FFFFFF"
                 align="right"
                 fontFamily="Inter, sans-serif"
               />
@@ -404,8 +408,7 @@ export const CabinetCanvas: React.FC<CabinetCanvasProps> = ({
                 x={cabinetWidth / 2} y={brandBandY + 13}
                 width={cabinetWidth / 2 - 30}
                 text={`${activeCabinet?.rowsCount || 0} rangées · ${activeCabinet?.modulesPerRow || 0} modules · IP40`}
-                fontSize={6.5}
-                fill="#64748B"
+                fontSize={6.5} fill="rgba(255,255,255,0.8)"
                 align="right"
                 fontFamily="Inter, sans-serif"
               />

@@ -261,41 +261,42 @@ export const ModularComponentNode: React.FC<ModularComponentNodeProps> = ({
       )}
 
       {/* ── 9. Rocker switch (ON/OFF) with I-ON/O-OFF markings ── */}
-      <Group x={width / 2 - 5.5} y={height / 2 - 9}>
-        {/* Recessed slot */}
+      <Group x={width / 2 - 4.5} y={height / 2 - 7}>
+        {/* Recessed slot — softened from near-black to a lighter grey so the
+            body of the breaker stays visually dominant */}
         <Rect
-          x={-2.5} y={-5}
-          width={16} height={32}
-          fill="#0F172A"
+          x={-1.8} y={-3.5}
+          width={12.6} height={26}
+          fill="#3F3F46"
           stroke="#1F2937"
           strokeWidth={0.4}
-          cornerRadius={2.2}
-          shadowColor="black" shadowBlur={1.5} shadowOffset={{ x: 0, y: 0.6 }} shadowOpacity={0.5}
+          cornerRadius={1.8}
+          shadowColor="black" shadowBlur={1.2} shadowOffset={{ x: 0, y: 0.5 }} shadowOpacity={0.45}
         />
         {/* Inner highlight on the slot */}
-        <Line points={[-1.8, -3.8, 13.2, -3.8]} stroke="rgba(255,255,255,0.18)" strokeWidth={0.5} />
+        <Line points={[-1.2, -2.6, 10.6, -2.6]} stroke="rgba(255,255,255,0.22)" strokeWidth={0.5} />
         {/* Rocker body — moved up when ON, down when OFF */}
         <Rect
-          x={-0.2} y={isON ? 0 : 11}
-          width={11} height={15}
+          x={0.2} y={isON ? 0 : 9}
+          width={9} height={12}
           fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-          fillLinearGradientEndPoint={{ x: 0, y: 15 }}
+          fillLinearGradientEndPoint={{ x: 0, y: 12 }}
           fillLinearGradientColorStops={[
             0, isON ? brand.rockerOnColor[0] : brand.rockerOffColor[0],
             1, isON ? brand.rockerOnColor[1] : brand.rockerOffColor[1]
           ]}
           stroke="#0F172A" strokeWidth={0.4}
-          cornerRadius={1.5}
-          shadowColor="black" shadowBlur={1.5} shadowOffset={{ x: 0, y: isON ? 1.2 : -1.2 }} shadowOpacity={0.45}
+          cornerRadius={1.2}
+          shadowColor="black" shadowBlur={1.2} shadowOffset={{ x: 0, y: isON ? 1 : -1 }} shadowOpacity={0.45}
         />
         {/* Rocker ridges (texture lines) */}
-        <Line points={[1, isON ? 4 : 15, 10, isON ? 4 : 15]} stroke="rgba(255,255,255,0.5)" strokeWidth={0.7} />
-        <Line points={[1, isON ? 7 : 18, 10, isON ? 7 : 18]} stroke="rgba(255,255,255,0.5)" strokeWidth={0.7} />
+        <Line points={[1.2, isON ? 3.5 : 12.5, 8.2, isON ? 3.5 : 12.5]} stroke="rgba(255,255,255,0.5)" strokeWidth={0.7} />
+        <Line points={[1.2, isON ? 6 : 15, 8.2, isON ? 6 : 15]} stroke="rgba(255,255,255,0.5)" strokeWidth={0.7} />
         {/* I-ON label (left of the rocker, at the side it currently points to) */}
         <Text
-          x={-9} y={isON ? 1.5 : 13}
+          x={-7} y={isON ? 2 : 11}
           text="I-ON"
-          fontSize={labelFont(4.5)}
+          fontSize={labelFont(4)}
           fontStyle="bold"
           fill={isON ? brand.brandStripeColor : '#94A3B8'}
           fontFamily="monospace"
